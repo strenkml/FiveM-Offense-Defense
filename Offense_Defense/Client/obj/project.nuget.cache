@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "H0yOSUPNvOjcHfPfstafFQGERZaf05kG2cyIQR+2hU0XE1d8Y4RphKIn/w/HsweoNYYZKiD3hO+tlLGsJQOjKA==",
+  "success": true,
+  "projectFilePath": "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Client\\Offense_Defense.Client.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\flyer\\.nuget\\packages\\citizenfx.core.client\\1.0.5712\\citizenfx.core.client.1.0.5712.nupkg.sha512",
+    "C:\\Users\\flyer\\.nuget\\packages\\citizenfx.framework.client\\0.2.2\\citizenfx.framework.client.0.2.2.nupkg.sha512"
+  ],
+  "logs": []
+}

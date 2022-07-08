@@ -1,0 +1,2 @@
+E:\Documents\GitHub\FiveM-Offense-Defense\Offense_Defense\Client\bin\Release\net452\publish\Offense_Defense.Client.net.dll
+E:\Documents\GitHub\FiveM-Offense-Defense\Offense_Defense\Client\bin\Release\net452\publish\CitizenFX.Core.Client.dll

@@ -1,0 +1,4 @@
+E:\Documents\GitHub\FiveM-Offense-Defense\Offensive_Defense\Offense_Defense\Server\bin\Release\netstandard2.0\publish\Offense_Defense.Server.net.dll
+E:\Documents\GitHub\FiveM-Offense-Defense\Offensive_Defense\Offense_Defense\Server\bin\Release\netstandard2.0\publish\Offense_Defense.Server.deps.json
+E:\Documents\GitHub\FiveM-Offense-Defense\Offensive_Defense\Offense_Defense\Server\bin\Release\netstandard2.0\publish\Offense_Defense.Server.net.pdb
+E:\Documents\GitHub\FiveM-Offense-Defense\Offensive_Defense\Offense_Defense\Server\bin\Release\netstandard2.0\publish\CitizenFX.Core.Server.dll

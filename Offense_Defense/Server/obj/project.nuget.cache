@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "8NpSI7s6zt2sUIPIY0l3u9W1O+DDMV+VfbBbzFV2ywnU6GhaCWpvajwa1asJ0dmcdcl34utBIFICLXFvGiHoKg==",
+  "success": true,
+  "projectFilePath": "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\Offense_Defense.Server.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\flyer\\.nuget\\packages\\citizenfx.core.server\\1.0.5712\\citizenfx.core.server.1.0.5712.nupkg.sha512",
+    "C:\\Users\\flyer\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\flyer\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

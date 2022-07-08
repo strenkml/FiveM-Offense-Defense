@@ -1,7 +1,12 @@
 {
   "assets": {
-    "Offense-Defense1.fxworld": {
-      "enabled": true
+    "Offense_Defense": {
+      "enabled": true,
+      "restartOnChange": true
+    },
+    "test": {
+      "enabled": true,
+      "restartOnChange": true
     }
   },
   "serverUpdateChannel": "recommended",
@@ -10,15 +15,15 @@
     "map-skater",
     "chat",
     "playernames",
+    "mapmanager",
     "spawnmanager",
     "sessionmanager",
     "baseevents",
     "hardcap",
     "webpack",
-    "yarn",
-    "mapmanager"
+    "yarn"
   ],
-  "name": "Offense_Defense",
-  "createdAt": "2022-07-07T01:51:34.415Z",
+  "name": "Offensive_Defense",
+  "createdAt": "2022-07-08T03:34:20.227Z",
   "variables": {}
 }
