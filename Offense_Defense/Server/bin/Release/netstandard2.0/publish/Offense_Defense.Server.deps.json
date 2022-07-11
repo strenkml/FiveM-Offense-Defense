@@ -9,14 +9,14 @@
     ".NETStandard,Version=v2.0/": {
       "Offense_Defense.Server/1.0.0": {
         "dependencies": {
-          "CitizenFX.Core.Server": "1.0.5712",
+          "CitizenFX.Core.Server": "1.0.5715",
           "NETStandard.Library": "2.0.3"
         },
         "runtime": {
           "Offense_Defense.Server.dll": {}
         }
       },
-      "CitizenFX.Core.Server/1.0.5712": {
+      "CitizenFX.Core.Server/1.0.5715": {
         "runtime": {
           "lib/netstandard20/CitizenFX.Core.Server.dll": {
             "assemblyVersion": "0.0.0.0",
@@ -38,12 +38,12 @@
       "serviceable": false,
       "sha512": ""
     },
-    "CitizenFX.Core.Server/1.0.5712": {
+    "CitizenFX.Core.Server/1.0.5715": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-aI0S5qlNSzSuAox32LjjZp4/itvLAMo8mayv329PRwf/yuOdieV2nmsWXFc0CIKsZ+qE86Kmo6Ljh5mhyPWn0w==",
-      "path": "citizenfx.core.server/1.0.5712",
-      "hashPath": "citizenfx.core.server.1.0.5712.nupkg.sha512"
+      "sha512": "sha512-/tzXwzZEhe+JHkTYI0EbmvbKL8JplP7STixexwmyLquw6kOfjxOi4nKYLQhDELOCi3ongpMgv8rZD13+4tlE8Q==",
+      "path": "citizenfx.core.server/1.0.5715",
+      "hashPath": "citizenfx.core.server.1.0.5715.nupkg.sha512"
     },
     "Microsoft.NETCore.Platforms/1.1.0": {
       "type": "package",

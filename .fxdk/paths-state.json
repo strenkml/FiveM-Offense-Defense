@@ -1,3 +1,15 @@
 {
-  "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Client": true
+  "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Client": true,
+  "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server": false,
+  "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Client\\bin": false,
+  "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Client\\bin\\Release": false,
+  "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Client\\bin\\Release\\net452": true,
+  "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Client\\bin\\Release\\net452\\publish": true,
+  "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\bin": true,
+  "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\bin\\Debug": false,
+  "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\bin\\Release": true,
+  "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\bin\\Release\\netstandard2.0": true,
+  "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\bin\\Release\\netstandard2.0\\publish": false,
+  "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense": true,
+  "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Client\\html": false
 }

@@ -1,0 +1,60 @@
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+table {
+    padding: 10px;
+    background-color: grey;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+th, td {
+    padding: 5px;
+}
+
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+
+#blue {
+    background-color: blue;
+    color: white;
+}
+
+#red {
+    background-color: red;
+}
+
+#green {
+    background-color: green;
+    color: white;
+}
+
+#orange {
+    background-color: orange;
+}
+
+#yellow {
+    background-color: yellow;
+}
+
+#pink {
+    background-color: pink;
+}
+
+#purple {
+    background-color: purple;
+    color: white;
+}
+
+#white {
+    background-color: white;
+}
+
+#waitingRoom {
+    background-color: rgb(182, 182, 182);
+    color: black;
+}

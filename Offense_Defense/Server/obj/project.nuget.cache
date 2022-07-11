@@ -4,7 +4,7 @@
   "success": true,
   "projectFilePath": "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\Offense_Defense.Server.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\flyer\\.nuget\\packages\\citizenfx.core.server\\1.0.5712\\citizenfx.core.server.1.0.5712.nupkg.sha512",
+    "C:\\Users\\flyer\\.nuget\\packages\\citizenfx.core.server\\1.0.5715\\citizenfx.core.server.1.0.5715.nupkg.sha512",
     "C:\\Users\\flyer\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
     "C:\\Users\\flyer\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512"
   ],

@@ -46,7 +46,7 @@ namespace OffenseDefense.Client
         {
             await PreGame();
 
-            Vehicle runnerCar = await SpawnRunnerCar();
+            // Vehicle runnerCar = await SpawnRunnerCar();
             //PreparePlayer(runnerCar);
             //await StartCountdown(runnerCar);
         }
@@ -58,9 +58,9 @@ namespace OffenseDefense.Client
 
         }
 
-        private static async Task<Vehicle> SpawnRunnerCar()
+        public static async Task<Vehicle> SpawnRunnerCar(Ped driver)
         {
-            Vehicle car = await World.CreateVehicle(VehicleHash.Voodoo, spawn);
+            Vehicle car = await World.CreateVehicle(VehicleHash.Voodoo, driver.Position, driver.Heading);
             Util.SetCarLicensePlate(car, "RUNNER");
             Color carColor = Colors.blue;
             Util.SetCarColor(car, carColor.r, carColor.g, carColor.b);
@@ -72,14 +72,16 @@ namespace OffenseDefense.Client
 
             car.PlaceOnGround();
 
+            driver.SetIntoVehicle(car, VehicleSeat.Driver);
+            
             
 
             return car;
         }
         
-        private static async Task<Vehicle> SpawnBlockerCar()
+        public static async Task<Vehicle> SpawnBlockerCar(Ped driver)
         {
-            Vehicle car = await World.CreateVehicle(VehicleHash.Insurgent2, spawn);
+            Vehicle car = await World.CreateVehicle(VehicleHash.Insurgent2, driver.Position, driver.Heading);
             Util.SetCarLicensePlate(car, "BLOCKER");
             Color carColor = Colors.blue;
             Util.SetCarColor(car, carColor.r, carColor.g, carColor.b);
@@ -90,6 +92,8 @@ namespace OffenseDefense.Client
             car.IsEngineRunning = true;
 
             car.PlaceOnGround();
+
+            driver.SetIntoVehicle(car, VehicleSeat.Driver);
 
             return car;
         }

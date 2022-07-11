@@ -7,6 +7,13 @@
     "test": {
       "enabled": true,
       "restartOnChange": true
+    },
+    "DerbyGamemode": {
+      "enabled": true,
+      "restartOnChange": true
+    },
+    "object-loader": {
+      "enabled": true
     }
   },
   "serverUpdateChannel": "recommended",
