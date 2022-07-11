@@ -1,10 +1,13 @@
 <html>
-  <head>
-    <link rel="stylesheet" href="ui.css" />
-    <script src="nui://game/ui/jquery.js" type="text/javascript"></script>s
-    <script src="ui.js" type="text/javascript"></script>
-  </head>
-  <body style="display: block">
+
+<head>
+  <link rel="stylesheet" href="ui.css" />
+  <script src="nui://game/ui/jquery.js" type="text/javascript"></script>
+  <script src="ui.js" type="text/javascript"></script>
+</head>
+
+<body>
+  <div id="teamConfig" style="display:none">
     <table align="center">
       <tr>
         <th>Team</th>
@@ -56,5 +59,16 @@
         <td colspan="3"></td>
       </tr>
     </table>
-  </body>
+  </div>
+  <div id="scoreboard" style="display: block">
+    <table id="scoreboardTable">
+      <tr>
+        <th>#</th>
+        <th>Team</th>
+        <th>Score</th>
+      </tr>
+    </table>
+  </div>
+</body>
+
 </html>

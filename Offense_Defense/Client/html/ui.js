@@ -1,48 +1,43 @@
-$(function() {
-  // const color = {
-  //   runner = null,
-  //   blockers = [],
-  // }
-  
-  // var data = {
-  //   blue = color,
-  //   red = color,
-  //   green = color,
-  //   orange = color,
-  //   yellow = color,
-  //   pink = color,
-  //   purple = color,
-  //   white = color,
-  // }
+$(function () {
+  window.addEventListener("message", function (event) {
+    let data = event.data;
 
-
-
-  window.addEventListener("message", function(event) {
-      console.log(event.data.players);
-      if(event.data.enable == true) {
-        document.body.style.display = "block";
+    // Team Configuration Menu
+    if (data.teamConfig != null) {
+      if (data.teamConfig == true) {
+        this.document.getElementById("teamConfig").style.display = "block";
       } else {
-        document.body.style.display = "none";
+        this.document.getElementById("teamConfig").style.display = "none";
       }
+    }
 
-      // if (event.data.players.length > 0) {
-      //   let playersString = event.data.players;
-      //   for (i = 1; i < event.data.players.length; i++) {
-      //     playersString = `${playersString}, ${event.data.players[i]}`
-      //   }
-      //   this.document.getElementById("waitingList").innerText = playersString;
-      // }
-      
+    // Game scoreboard
+    if (data.scoreboard != null) {
+      if (data.scoreBoard == true) {
+        this.document.getElementById("scoreboard").style.display = "block";
+        // Fill the table with the scores
+        if (data.scores != null) {
+          let table = this.document.getElementById("scoreboardTable");
+          for (let i = 0; i < data.scores.length; i++) {
+            let teamScore = data.scores[i];
+            let newRow = table.insertRow(-1);
+
+            let positionItem = this.document.createElement("td");
+            let teamItem = this.document.createElement("td");
+            let scoreItem = this.document.createElement("td");
+
+            positionItem.innerHTML = teamScore.position;
+            teamItem.innerHTML = teamScore.team;
+            scoreItem.innerHTML = teamScore.score;
+
+            newRow.appendChild(positionItem);
+            newRow.appendChild(teamItem);
+            newRow.appendChild(scoreItem);
+          }
+        }
+      } else {
+        this.document.getElementById("scoreboard").style.display = "none";
+      }
+    }
   });
-
-  // $("#exit").click(function () {
-  //   console.log("Clicked!")
-  //   fetch(`https://${GetParentResourceName()}/exit`, {
-  //     method: 'POST',
-  //     headers: {
-  //         'Content-Type': 'application/json; charset=UTF-8',
-  //     },
-  //     body: JSON.stringify({})
-  // }).then(resp => resp.json()).then(resp => console.log(resp));
-  // });
 });

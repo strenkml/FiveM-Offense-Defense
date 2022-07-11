@@ -58,3 +58,7 @@ table, th, td {
     color: red;
     text-align: center;
 }
+
+#scoreboardTable {
+    background-color: transparent;
+}

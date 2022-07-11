@@ -21,13 +21,12 @@ namespace OffenseDefense.Server
 
       // Event Handlers
       EventHandlers.Add("OffDef:AddPlayer", new Action<string, string>(AddPlayer));
-      EventHandlers.Add("OffDef:RemovePlayer", new Action<string, string>(RemovePlayer));
-      EventHandlers.Add("OffDef:SetRunner", new Action<string, string>(SetRunner));
+      EventHandlers.Add("OffDef:RemovePlayer", new Action<string>(RemovePlayer));
+      EventHandlers.Add("OffDef:SetRunner", new Action<string>(SetRunner));
 
 
     }
 
-    // The rest of the teams need to be checked to see if the player is on their team
     private void AddPlayer(string color, string name)
     {
       string otherTeam = IsPlayerInOtherTeam(color, name);
@@ -41,22 +40,30 @@ namespace OffenseDefense.Server
       API.TriggerClientEvent("OffDef:UpdateTeams", this.teams);
     }
 
-    private void RemovePlayer(string color, string name)
+    private void RemovePlayer(string name)
     {
-      Team team = this.teams[color];
-      team.RemovePlayer(name);
-      API.TriggerClientEvent("OffDef:UpdateTeams", this.teams);
+      string color = GetPlayerTeam(name);
+      if (color != "")
+      {
+        Team team = this.teams[color];
+        team.RemovePlayer(name);
+        API.TriggerClientEvent("OffDef:UpdateTeams", this.teams);
+      }
     }
 
-    private void SetRunner(string color, string name)
+    private void SetRunner(string name)
     {
-      Team team = this.teams[color];
-      bool result = team.SetRole(name, "Runner");
-      if (!result)
+      string color = GetPlayerTeam(name);
+      if (color != "")
       {
-        Debug.WriteLine($"ERROR: Failed to set player {name} to runner for {color} team");
+        Team team = this.teams[color];
+        bool result = team.SetRole(name, "Runner");
+        if (!result)
+        {
+          Debug.WriteLine($"ERROR: Failed to set player {name} to runner for {color} team");
+        }
+        API.TriggerClientEvent("OffDef:UpdateTeams", this.teams);
       }
-      API.TriggerClientEvent("OffDef:UpdateTeams", this.teams);
     }
 
     private string IsPlayerInOtherTeam(string excludeColor, string name)
@@ -69,6 +76,18 @@ namespace OffenseDefense.Server
           {
             return entry.Key;
           }
+        }
+      }
+      return "";
+    }
+
+    private string GetPlayerTeam(string name)
+    {
+      foreach (KeyValuePair<string, Team> entry in this.teams)
+      {
+        if (entry.Value.IsPlayer(name))
+        {
+          return entry.Key;
         }
       }
       return "";
