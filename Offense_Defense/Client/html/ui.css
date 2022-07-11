@@ -54,7 +54,7 @@ table, th, td {
     background-color: white;
 }
 
-#waitingRoom {
-    background-color: rgb(182, 182, 182);
-    color: black;
+#status {
+    color: red;
+    text-align: center;
 }
