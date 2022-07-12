@@ -6,6 +6,20 @@ $(function () {
     if (data.teamConfig != null) {
       if (data.teamConfig == true) {
         this.document.getElementById("teamConfig").style.display = "block";
+        let field = this.document.getElementById("statusField");
+        if (data.lockTeamConfig == true) {
+          field.innerText = "LOCKED";
+          field.style.color = red;
+        } else {
+          field.innerText = "";
+          field.style.color = black;
+        }
+
+        // Fill in the team data
+        if (data.teams != null) {
+          // TODO: Add logic for filling in the table
+        }
+
       } else {
         this.document.getElementById("teamConfig").style.display = "none";
       }

@@ -10,6 +10,8 @@ namespace OffenseDefense.Server
   {
     readonly string[] teamColors = { "blue", "red", "green", "orange", "yellow", "pink", "purple", "white" };
     Dictionary<string, Team> teams = new Dictionary<string, Team>();
+
+    Dictionary<int, string> players = new Dictionary<int, string>();
     public ServerMain()
     {
       Debug.WriteLine("Hi from OffenseDefense.Server!");
@@ -20,16 +22,22 @@ namespace OffenseDefense.Server
       }
 
       // Event Handlers
+      EventHandlers.Add("OffDef:StartConfig", new Action(StartConfig));
       EventHandlers.Add("OffDef:AddPlayer", new Action<string, string>(AddPlayer));
       EventHandlers.Add("OffDef:RemovePlayer", new Action<string>(RemovePlayer));
       EventHandlers.Add("OffDef:SetRunner", new Action<string>(SetRunner));
+      EventHandlers.Add("OffDef:SetTeamSpawnLocation", new Action<Vector3, float>(SetTeamSpawn));
 
 
     }
 
+    // Event Handler Methods
+    private void StartConfig() {
+
+    }
     private void AddPlayer(string color, string name)
     {
-      string otherTeam = IsPlayerInOtherTeam(color, name);
+      string otherTeam = Util.IsPlayerInOtherTeam(color, name, teams);
       if (otherTeam != "")
       {
         Team oldTeam = this.teams[otherTeam];
@@ -37,23 +45,23 @@ namespace OffenseDefense.Server
       }
       Team team = this.teams[color];
       team.AddPlayer(name);
-      API.TriggerClientEvent("OffDef:UpdateTeams", this.teams);
+      TriggerClientEvent("OffDef:UpdateTeams", this.teams);
     }
 
     private void RemovePlayer(string name)
     {
-      string color = GetPlayerTeam(name);
+      string color = Util.GetPlayerTeam(name, teams);
       if (color != "")
       {
         Team team = this.teams[color];
         team.RemovePlayer(name);
-        API.TriggerClientEvent("OffDef:UpdateTeams", this.teams);
+        TriggerClientEvent("OffDef:UpdateTeams", this.teams);
       }
     }
 
     private void SetRunner(string name)
     {
-      string color = GetPlayerTeam(name);
+      string color = Util.GetPlayerTeam(name, teams);
       if (color != "")
       {
         Team team = this.teams[color];
@@ -62,37 +70,13 @@ namespace OffenseDefense.Server
         {
           Debug.WriteLine($"ERROR: Failed to set player {name} to runner for {color} team");
         }
-        API.TriggerClientEvent("OffDef:UpdateTeams", this.teams);
+        TriggerClientEvent("OffDef:UpdateTeams", this.teams);
       }
     }
 
-    private string IsPlayerInOtherTeam(string excludeColor, string name)
-    {
-      foreach (KeyValuePair<string, Team> entry in this.teams)
-      {
-        if (entry.Key != excludeColor)
-        {
-          if (entry.Value.IsPlayer(name))
-          {
-            return entry.Key;
-          }
-        }
-      }
-      return "";
+    private void SetTeamSpawn(Vector3 newSpawn, float heading) {
+      
     }
-
-    private string GetPlayerTeam(string name)
-    {
-      foreach (KeyValuePair<string, Team> entry in this.teams)
-      {
-        if (entry.Value.IsPlayer(name))
-        {
-          return entry.Key;
-        }
-      }
-      return "";
-    }
-
 
 
     [Command("hello_server")]

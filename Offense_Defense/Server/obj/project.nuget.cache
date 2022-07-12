@@ -1,27 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "ODejRG9/UDFvVi44+nVpSBk7hRuR5U8c8QM71wlyGfBcOdriqE+Nk2XjJxip4Pk4WMhRLykY6PIpxayDodO3Lw==",
-  "success": false,
-  "projectFilePath": "C:\\Users\\flyer\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\Offense_Defense.Server.csproj",
-  "expectedPackageFiles": [],
-  "logs": [
-    {
-      "code": "NU1102",
-      "level": "Error",
-      "message": "Unable to find package NETStandard.Library with version (>= 2.0.3)\r\n  - Found 3 version(s) in Microsoft Visual Studio Offline Packages [ Nearest version: 2.0.0 ]",
-      "libraryId": "NETStandard.Library",
-      "targetGraphs": [
-        ".NETStandard,Version=v2.0"
-      ]
-    },
-    {
-      "code": "NU1101",
-      "level": "Error",
-      "message": "Unable to find package CitizenFX.Core.Server. No packages exist with this id in source(s): Microsoft Visual Studio Offline Packages",
-      "libraryId": "CitizenFX.Core.Server",
-      "targetGraphs": [
-        ".NETStandard,Version=v2.0"
-      ]
-    }
-  ]
+  "dgSpecHash": "8NpSI7s6zt2sUIPIY0l3u9W1O+DDMV+VfbBbzFV2ywnU6GhaCWpvajwa1asJ0dmcdcl34utBIFICLXFvGiHoKg==",
+  "success": true,
+  "projectFilePath": "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\Offense_Defense.Server.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\flyer\\.nuget\\packages\\citizenfx.core.server\\1.0.5715\\citizenfx.core.server.1.0.5715.nupkg.sha512",
+    "C:\\Users\\flyer\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\flyer\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512"
+  ],
+  "logs": []
 }

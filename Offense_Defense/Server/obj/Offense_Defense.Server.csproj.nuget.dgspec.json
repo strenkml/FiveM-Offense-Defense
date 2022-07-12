@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\flyer\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\Offense_Defense.Server.csproj": {}
+    "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\Offense_Defense.Server.csproj": {}
   },
   "projects": {
-    "C:\\Users\\flyer\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\Offense_Defense.Server.csproj": {
+    "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\Offense_Defense.Server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\flyer\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\Offense_Defense.Server.csproj",
+        "projectUniqueName": "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\Offense_Defense.Server.csproj",
         "projectName": "Offense_Defense.Server",
-        "projectPath": "C:\\Users\\flyer\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\Offense_Defense.Server.csproj",
+        "projectPath": "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\Offense_Defense.Server.csproj",
         "packagesPath": "C:\\Users\\flyer\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\flyer\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\obj\\",
+        "outputPath": "E:\\Documents\\GitHub\\FiveM-Offense-Defense\\Offense_Defense\\Server\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\flyer\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -21,7 +21,8 @@
           "netstandard2.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {}
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "netstandard2.0": {
@@ -60,7 +61,7 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\6.0.301\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.302\\RuntimeIdentifierGraph.json"
         }
       }
     }
