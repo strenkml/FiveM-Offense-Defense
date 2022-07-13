@@ -161,7 +161,7 @@ namespace OffenseDefense.Client
         {
             SpawnCar();
             PreparePlayer();
-            TriggerServerEvent("OffDef:ClientReady", API.PlayerPedId());
+            TriggerServerEvent("OffDef:ClientReady", Game.Player.Name);
             while (!this.allClientsReady)
             {
                 await Delay(1000);

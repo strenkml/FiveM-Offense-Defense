@@ -14,6 +14,9 @@
     },
     "object-loader": {
       "enabled": true
+    },
+    "Map1.fxworld": {
+      "enabled": true
     }
   },
   "serverUpdateChannel": "recommended",

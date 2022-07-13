@@ -23,6 +23,7 @@ namespace OffenseDefense.Client
         const int timeResetButtonPressedThreshold = 3000;
 
         bool configMenuShown = false;
+        bool isConfigLocked = true;
 
         /* -------------------------------------------------------------------------- */
         /*                                 Constructor                                */
@@ -35,37 +36,33 @@ namespace OffenseDefense.Client
 
             // Commands
             // TODO: Prepend all of the commands with od
-            API.RegisterCommand("del", new Action(DeleteCars), false);
+            // User Commands
             API.RegisterCommand("showConfig", new Action(ShowMenu), false);
             API.RegisterCommand("hideConfig", new Action(HideMenu), false);
-            API.RegisterCommand("startConfig", new Action(TriggerStartConfig), false);
-            API.RegisterCommand("startGame", new Action(TriggerStartGame), false);
             API.RegisterCommand("joinTeam", new Action<String>(JoinTeam), false);
             API.RegisterCommand("leaveTeam", new Action(LeaveTeam), false);
             API.RegisterCommand("setRunner", new Action(JoinRunner), false);
+
+            // Global Commands
+            API.RegisterCommand("del", new Action(DeleteCars), false);
+            API.RegisterCommand("startConfig", new Action(TriggerStartConfig), false);
             API.RegisterCommand("lockConfig", new Action(LockConfig), false);
             API.RegisterCommand("unlockConfig", new Action(UnlockConfig), false);
+            API.RegisterCommand("startGame", new Action(TriggerStartGame), false);
 
             // Event Handlers
             EventHandlers.Add("OffDef:UpdateTeams", new Action<dynamic>(UpdateTeams));
             EventHandlers.Add("OffDef:StartGame", new Action<Dictionary<int, dynamic>>(StartGame));
             EventHandlers.Add("OffDef:StartConfig", new Action(StartConfig));
             EventHandlers.Add("OffDef:SetSpawn", new Action<Vector3, float>(SetSpawn));
+            EventHandlers.Add("OffDef:SetConfigLock", new Action<bool>(SetConfigLock));
+            EventHandlers.Add("OffDef:ShowConfig", new Action(ShowMenu));
 
         }
 
         /* -------------------------------------------------------------------------- */
-        /*                               Command Methods                              */
+        /*                            User Command Methods                            */
         /* -------------------------------------------------------------------------- */
-        private void DeleteCars()
-        {
-            Vehicle[] cars = World.GetAllVehicles();
-            foreach (Vehicle car in cars)
-            {
-                car.Delete();
-            }
-        }
-
         private void ShowMenu()
         {
             Util.SendNuiMessage(new { teamConfig = true });
@@ -101,14 +98,32 @@ namespace OffenseDefense.Client
             TriggerServerEvent("OffDef:SetRunner", playerName);
         }
 
+
+        /* -------------------------------------------------------------------------- */
+        /*                           Global Commands Methods                          */
+        /* -------------------------------------------------------------------------- */
+        private void DeleteCars()
+        {
+            Vehicle[] cars = World.GetAllVehicles();
+            foreach (Vehicle car in cars)
+            {
+                car.Delete();
+            }
+        }
+
         private void LockConfig()
         {
-            Util.SendNuiMessage(new { teamConfig = true, lockTeamConfig = true });
+            TriggerServerEvent("OffDef:SetConfigLock", true);
         }
 
         private void UnlockConfig()
         {
-            Util.SendNuiMessage(new { teamConfig = true, lockTeamConfig = false });
+            TriggerServerEvent("OffDef:SetConfigLock", false);
+        }
+
+        private void TriggerStartConfig()
+        {
+            TriggerServerEvent("OffDef:StartConfig");
         }
 
         private void TriggerStartGame()
@@ -116,10 +131,6 @@ namespace OffenseDefense.Client
             TriggerServerEvent("OffDef:StartGame");
         }
 
-        private void TriggerStartConfig()
-        {
-            TriggerServerEvent("OffDef:StartConfig");
-        }
 
         /* -------------------------------------------------------------------------- */
         /*                                Event Methods                               */
@@ -151,6 +162,18 @@ namespace OffenseDefense.Client
             ShowMenu();
         }
 
+        private void SetConfigLock(bool newLock)
+        {
+            this.isConfigLocked = newLock;
+            if (newLock)
+            {
+                Util.SendNuiMessage(new { teamConfig = true, lockTeamConfig = true });
+            }
+            else
+            {
+                Util.SendNuiMessage(new { teamConfig = true, lockTeamConfig = false });
+            }
+        }
 
         /* -------------------------------------------------------------------------- */
         /*                                 NUI Methods                                */
