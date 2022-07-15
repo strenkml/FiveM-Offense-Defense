@@ -5,7 +5,7 @@ Resource for FiveM that adds the Offense Defense gamemode that Rockstar removed 
 ## TODO
 
 - [ ] Add OD prefix to all of the commands
-- [ ] Gate all of the config editing commands to only work when there is not a lock on the config
+- [x] Gate all of the config editing commands to only work when there is not a lock on the config
 - [ ] Create the maps
 - [ ] Add logic for a runner hitting a checkpoint
 - [ ] Add a server event for when a player leaves the server
@@ -15,4 +15,5 @@ Resource for FiveM that adds the Offense Defense gamemode that Rockstar removed 
 - [ ] Remove the delete cars command
 - [ ] Add a NUI menu for starting the game that is opened using the start game command
   - Pass in a list of Maps to choose from
-- [ ] The startgame command should lock the config menu
+- [x] The startgame command should lock the config menu
+- [ ] Change all of the commands to use the correct argument format
