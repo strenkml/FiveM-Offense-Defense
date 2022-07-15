@@ -39,7 +39,7 @@ namespace OffenseDefense.Client
             // User Commands
             API.RegisterCommand("showConfig", new Action(ShowMenu), false);
             API.RegisterCommand("hideConfig", new Action(HideMenu), false);
-            API.RegisterCommand("joinTeam", new Action<String>(JoinTeam), false);
+            API.RegisterCommand("joinTeam", new Action<string>(JoinTeam), false);
             API.RegisterCommand("leaveTeam", new Action(LeaveTeam), false);
             API.RegisterCommand("setRunner", new Action(JoinRunner), false);
 
@@ -65,39 +65,57 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         private void ShowMenu()
         {
-            Util.SendNuiMessage(new { teamConfig = true });
+            Util.SendNuiMessage(new { teamConfig = true, lockTeamConfig = isConfigLocked });
             API.SetNuiFocus(false, false);
             this.configMenuShown = true;
         }
 
         private void HideMenu()
         {
-            Util.SendNuiMessage(new { teamConfig = false });
+            Util.SendNuiMessage(new { teamConfig = false, lockTeamConfig = isConfigLocked });
             API.SetNuiFocus(false, false);
             this.configMenuShown = false;
         }
 
-        private void JoinTeam(String teamColor)
+        private void JoinTeam(string teamColor)
         {
-            string playerName = Game.Player.Name;
+            Debug.WriteLine($"Config lock: {isConfigLocked}");
+            if (!isConfigLocked)
+            {
+                teamColor = teamColor.ToLower();
 
-            TriggerServerEvent("OffDef:AddPlayer", teamColor, playerName);
+                Debug.WriteLine("Checking is color");
+                // Colors.PrintColors();
+                if (Colors.IsColor(teamColor))
+                {
+                    string playerName = Game.Player.Name;
+
+                    Debug.WriteLine("Joining team");
+
+                    TriggerServerEvent("OffDef:AddPlayer", teamColor, playerName);
+                }
+            }
         }
 
         private void LeaveTeam()
         {
-            string playerName = Game.Player.Name;
+            if (!isConfigLocked)
+            {
+                string playerName = Game.Player.Name;
 
-            TriggerServerEvent("OffDef:RemovePlayer", playerName);
+                TriggerServerEvent("OffDef:RemovePlayer", playerName);
+            }
         }
 
         private void JoinRunner()
         {
-            string playerName = Game.Player.Name;
+            if (!isConfigLocked)
+            {
+                string playerName = Game.Player.Name;
 
-            TriggerServerEvent("OffDef:SetRunner", playerName);
+                TriggerServerEvent("OffDef:SetRunner", playerName);
+            }
         }
-
 
         /* -------------------------------------------------------------------------- */
         /*                           Global Commands Methods                          */
@@ -137,6 +155,7 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         private void UpdateTeams(dynamic teams)
         {
+            Debug.WriteLine("Updating teams");
             this.teams = teams;
             UpdateMenu();
         }

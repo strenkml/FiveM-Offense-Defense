@@ -14,6 +14,7 @@ namespace OffenseDefense.Server
             this.color = color;
             this.runner = "";
             this.blockers = new List<string>();
+            this.players = new List<string>();
         }
 
         public string GetColor()

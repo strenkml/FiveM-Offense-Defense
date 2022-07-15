@@ -9,15 +9,16 @@ $(function () {
         let field = this.document.getElementById("statusField");
         if (data.lockTeamConfig == true) {
           field.innerText = "LOCKED";
-          field.style.color = red;
+          field.style.color = "red";
         } else {
           field.innerText = "";
-          field.style.color = black;
+          field.style.color = "black";
         }
 
         // Fill in the team data
         if (data.teams != null) {
           // TODO: Add logic for filling in the table
+          console.log(data.teams);
         }
 
       } else {

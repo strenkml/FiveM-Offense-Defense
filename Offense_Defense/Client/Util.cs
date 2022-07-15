@@ -18,11 +18,6 @@ namespace OffenseDefense.Client
             Function.Call(Hash.SET_VEHICLE_CUSTOM_SECONDARY_COLOUR, car.Handle, r, g, b);
         }
 
-        public static void RequestModel(dynamic hash)
-        {
-            API.RequestModel((uint)hash);
-        }
-
         public static bool WasButtonPressed(int button)
         {
             return API.IsControlJustReleased(1, button);
@@ -52,6 +47,31 @@ namespace OffenseDefense.Client
                     color = detail.Value.color;
                 }
             }
+        }
+
+        public static void RequestModel(string name)
+        {
+            uint hash = (uint)API.GetHashKey(name);
+            API.RequestModel(hash);
+        }
+
+        public static void RequestModel(uint hash)
+        {
+            API.RequestModel(hash);
+        }
+
+        public static bool IsPossibleCar(string name)
+        {
+            uint hash = (uint)API.GetHashKey(name);
+
+            return API.IsModelAVehicle(hash) && (API.IsThisModelABike(hash) || API.IsThisModelACar(hash) || API.IsThisModelAnAmphibiousCar(hash) || API.IsThisModelAnAmphibiousQuadbike((int)hash) || API.IsThisModelAQuadbike(hash));
+
+        }
+
+        public static bool IsPossibleCar(uint hash)
+        {
+            return API.IsModelAVehicle(hash) && (API.IsThisModelABike(hash) || API.IsThisModelACar(hash) || API.IsThisModelAnAmphibiousCar(hash) || API.IsThisModelAnAmphibiousQuadbike((int)hash) || API.IsThisModelAQuadbike(hash));
+
         }
     }
 }

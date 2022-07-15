@@ -28,6 +28,8 @@ namespace OffenseDefense.Client
         // Other Clients
         private bool allClientsReady = false;
 
+        private bool gameActive = false;
+
         /* -------------------------------------------------------------------------- */
         /*                                 Constructor                                */
         /* -------------------------------------------------------------------------- */
@@ -45,8 +47,11 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         private async Task onTick()
         {
-            DisableControls();
-            DrawCountdown();
+            if (gameActive)
+            {
+                DisableControls();
+                DrawCountdown();
+            }
 
 
             await Task.FromResult(0);
@@ -55,36 +60,56 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         /*                               Vehicle Control                              */
         /* -------------------------------------------------------------------------- */
-        private async Task<Vehicle> SpawnRunnerCar()
+        private async Task<Vehicle> SpawnRunnerCar(string vehicle)
         {
-            VehicleHash carModel = VehicleHash.Voodoo;
-            Util.RequestModel(carModel);
-            Vehicle car = await World.CreateVehicle(carModel, this.spawn, this.heading);
-            Util.SetCarLicensePlate(car, "RUNNER");
+            if (Util.IsPossibleCar(vehicle))
+            {
+                Util.RequestModel(vehicle);
+                Vehicle car = await World.CreateVehicle(vehicle, this.spawn, this.heading);
+                Util.SetCarLicensePlate(car, "RUNNER");
 
-            return car;
+                return car;
+            }
+            else
+            {
+                return null;
+            }
         }
 
-        private async Task<Vehicle> SpawnBlockerCar()
+        private async Task<Vehicle> SpawnBlockerCar(string vehicle)
         {
-            VehicleHash carModel = VehicleHash.Insurgent2;
-            Util.RequestModel(carModel);
-            Vehicle car = await World.CreateVehicle(carModel, this.spawn, this.heading);
-            Util.SetCarLicensePlate(car, "BLOCKER");
+            if (Util.IsPossibleCar(vehicle))
+            {
+                Util.RequestModel(vehicle);
+                Vehicle car = await World.CreateVehicle(vehicle, this.spawn, this.heading);
+                Util.SetCarLicensePlate(car, "BLOCKER");
 
-            return car;
+                return car;
+            }
+            else
+            {
+                return null;
+            }
         }
 
-        private async void SpawnCar()
+        private async void SpawnCar(string vehicle = "")
         {
             Vehicle car;
             if (this.role == "Runner")
             {
-                car = await SpawnRunnerCar();
+                if (vehicle == "")
+                {
+                    vehicle = "Voodoo";
+                }
+                car = await SpawnRunnerCar(vehicle);
             }
             else
             {
-                car = await SpawnBlockerCar();
+                if (vehicle == "")
+                {
+                    vehicle = "Insurgent2";
+                }
+                car = await SpawnBlockerCar(vehicle);
             }
 
             Color carColor = Colors.list[this.teamColor];

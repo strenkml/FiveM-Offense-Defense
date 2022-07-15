@@ -2,7 +2,6 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using CitizenFX.Core;
-using CitizenFX.Core.Native;
 
 namespace OffenseDefense.Server
 {
@@ -13,11 +12,11 @@ namespace OffenseDefense.Server
 
         List<Player> players = new List<Player>();
 
-        Dictionary<string, bool> playersReady;
+        Dictionary<string, bool> playersReady = new Dictionary<string, bool>();
 
         public ServerMain()
         {
-            Debug.WriteLine("Hi from OffenseDefense.Server!");
+            Debug.WriteLine("Hello from the OffenseDefense Server!");
 
             // Create the teams
             foreach (string color in teamColors)
@@ -27,6 +26,7 @@ namespace OffenseDefense.Server
 
             // Event Handlers
             EventHandlers.Add("OffDef:StartConfig", new Action(StartConfig));
+            EventHandlers.Add("OffDef:StartGame", new Action(StartGame));
             EventHandlers.Add("OffDef:AddPlayer", new Action<string, string>(AddPlayer));
             EventHandlers.Add("OffDef:RemovePlayer", new Action<string>(RemovePlayer));
             EventHandlers.Add("OffDef:SetRunner", new Action<string>(SetRunner));
@@ -35,7 +35,7 @@ namespace OffenseDefense.Server
             EventHandlers.Add("OffDef:ClientReady", new Action<string>(SetClientReady));
 
             // General Handlers
-            EventHandlers.Add("playerJoining", new Action<string, string>(OnPlayerJoiningServer));
+            // EventHandlers.Add("playerJoining", new Action<string, string>(OnPlayerJoiningServer));
         }
 
         /* -------------------------------------------------------------------------- */
@@ -43,17 +43,27 @@ namespace OffenseDefense.Server
         /* -------------------------------------------------------------------------- */
         private void StartConfig()
         {
+            Debug.WriteLine("Starting config");
             foreach (Player p in Players)
             {
                 players.Add(p);
-                playersReady.Add(p.Name, false);
+                playersReady.Add(p.Handle, false);
             }
 
+            TriggerClientEvent("OffDef:StartConfig");
             TriggerClientEvent("OffDef:SetConfigLock", false);
+
+        }
+
+        private void StartGame()
+        {
+            TriggerClientEvent("OffDef:SetConfigLock", true);
+
         }
 
         private void AddPlayer(string color, string name)
         {
+            Debug.WriteLine("Adding player");
             string otherTeam = Util.IsPlayerInOtherTeam(color, name, teams);
             if (otherTeam != "")
             {
@@ -119,7 +129,7 @@ namespace OffenseDefense.Server
         /* -------------------------------------------------------------------------- */
         private void OnPlayerJoiningServer(string source, string oldID)
         {
-            // TODO: Switch all instances of the user's name to use the user's handle            
+            // TODO: Switch all instances of the user's name to use the user's handle
         }
 
 
