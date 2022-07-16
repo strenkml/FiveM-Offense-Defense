@@ -1,64 +1,72 @@
-html, body {
-    height: 100%;
-    width: 100%;
+html,
+body {
+  height: 100%;
+  width: 100%;
 }
 
 table {
-    padding: 10px;
-    background-color: grey;
-    margin-left: auto;
-    margin-right: auto;
+  padding: 10px;
+  background-color: grey;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-th, td {
-    padding: 5px;
+th,
+td {
+  padding: 5px;
 }
 
-table, th, td {
-    border: 1px solid black;
-    border-collapse: collapse;
+table,
+th,
+td {
+  border: 1px solid black;
+  border-collapse: collapse;
 }
 
 #blue {
-    background-color: blue;
-    color: white;
+  background-color: blue;
+  color: white;
 }
 
 #red {
-    background-color: red;
+  background-color: red;
 }
 
 #green {
-    background-color: green;
-    color: white;
+  background-color: green;
+  color: white;
 }
 
 #orange {
-    background-color: orange;
+  background-color: orange;
 }
 
 #yellow {
-    background-color: yellow;
+  background-color: yellow;
 }
 
 #pink {
-    background-color: pink;
+  background-color: pink;
 }
 
 #purple {
-    background-color: purple;
-    color: white;
+  background-color: purple;
+  color: white;
 }
 
 #white {
-    background-color: white;
+  background-color: white;
 }
 
 #status {
-    color: red;
-    text-align: center;
+  color: red;
+  text-align: center;
 }
 
 #scoreboardTable {
-    background-color: transparent;
+  background-color: transparent;
+}
+
+#gameMenu {
+  background-color: white;
 }

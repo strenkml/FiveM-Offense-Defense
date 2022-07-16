@@ -1,13 +1,19 @@
 using System.Collections.Generic;
+using CitizenFX.Core;
 
 namespace OffenseDefense.Server
 {
     class Team
     {
-        private string color;
+        public string color { get; set; }
         private List<string> players;
-        private string runner;
-        private List<string> blockers;
+        public string runner { get; set; }
+        public List<string> blockers { get; set; }
+        public int points { get; set; }
+        public bool completedRace { get; set; }
+        public int position { get; set; }
+        public int completedPosition { get; set; }
+
 
         public Team(string color)
         {
@@ -15,6 +21,10 @@ namespace OffenseDefense.Server
             this.runner = "";
             this.blockers = new List<string>();
             this.players = new List<string>();
+            this.points = 0;
+            this.completedRace = false;
+            this.position = 0;
+            this.completedPosition = 0;
         }
 
         public string GetColor()
@@ -29,6 +39,7 @@ namespace OffenseDefense.Server
                 this.players.Add(name);
 
                 this.blockers.Add(name);
+
                 return true;
             }
             return false;
@@ -110,6 +121,54 @@ namespace OffenseDefense.Server
         public List<string> GetPlayers()
         {
             return this.players;
+        }
+
+        public void SetPoints(int newPoints)
+        {
+            this.points = newPoints;
+        }
+
+        public int GetPoints()
+        {
+            return this.points;
+        }
+
+        public void IncPoints()
+        {
+            this.points++;
+        }
+
+        public void DecPoints()
+        {
+            if (this.points - 1 < 0)
+            {
+                this.points = 0;
+            }
+            else
+            {
+                this.points--;
+            }
+        }
+
+        public bool HasCompletedRace(int neededPoints)
+        {
+            return neededPoints == this.points;
+        }
+
+        public void ResetScoring()
+        {
+            this.points = 0;
+            this.completedRace = false;
+        }
+
+        public void SetRaceCompleted()
+        {
+            this.completedRace = true;
+        }
+
+        public void SetCurrentPosition(int newPosition)
+        {
+            this.position = newPosition;
         }
 
     }

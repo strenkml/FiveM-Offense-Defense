@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using CitizenFX.Core;
+using CitizenFX.Core.Native;
 
 namespace OffenseDefense.Server
 {
@@ -13,6 +14,17 @@ namespace OffenseDefense.Server
         List<Player> players = new List<Player>();
 
         Dictionary<string, bool> playersReady = new Dictionary<string, bool>();
+        bool oldAllPlayersReady = false;
+
+        // Game Countdown
+        const int countdownStart = 5;
+        const int timePerCountdown = 1000;
+        int currrentCountdownTime = 0;
+        bool countdownActive = false;
+        int countdownCount = countdownStart;
+
+        // Game info
+        Map currentMap;
 
         public ServerMain()
         {
@@ -24,43 +36,77 @@ namespace OffenseDefense.Server
                 teams.Add(color, new Team(color));
             }
 
+            // Server Commands
+            API.RegisterCommand("lockConfig", new Action<int, List<object>, string>(LockConfig), false);
+            API.RegisterCommand("unlockConfig", new Action<int, List<object>, string>(UnlockConfig), false);
+            API.RegisterCommand("startConfig", new Action<int, List<object>, string>(StartConfig), false);
+            API.RegisterCommand("startGame", new Action<int, List<object>, string>(StartGame), false);
+
             // Event Handlers
-            EventHandlers.Add("OffDef:StartConfig", new Action(StartConfig));
-            EventHandlers.Add("OffDef:StartGame", new Action(StartGame));
             EventHandlers.Add("OffDef:AddPlayer", new Action<string, string>(AddPlayer));
             EventHandlers.Add("OffDef:RemovePlayer", new Action<string>(RemovePlayer));
             EventHandlers.Add("OffDef:SetRunner", new Action<string>(SetRunner));
             EventHandlers.Add("OffDef:SetTeamSpawnLocation", new Action<string, Vector3, float>(SetTeamSpawn));
-            EventHandlers.Add("OffDef:SetConfigLock", new Action<bool>(SetConfigLock));
             EventHandlers.Add("OffDef:ClientReady", new Action<string>(SetClientReady));
+            EventHandlers.Add("OffDef:AddTeamPoint", new Action<string>(AddTeamPoint));
 
             // General Handlers
-            // EventHandlers.Add("playerJoining", new Action<string, string>(OnPlayerJoiningServer));
+            EventHandlers.Add("playerJoining", new Action<string, string>(OnPlayerJoiningServer));
+            EventHandlers.Add("playerLeaving", new Action<string, string>(OnPlayerLeavingServer));
         }
 
         /* -------------------------------------------------------------------------- */
-        /*                            Event Handler Methods                           */
+        /*                               Server Commands                              */
         /* -------------------------------------------------------------------------- */
-        private void StartConfig()
+        private void StartConfig(int source, List<object> args, string raw)
         {
             Debug.WriteLine("Starting config");
-            foreach (Player p in Players)
-            {
-                players.Add(p);
-                playersReady.Add(p.Handle, false);
-            }
+
+            SetPlayers();
+            SetReadyPlayer();
 
             TriggerClientEvent("OffDef:StartConfig");
             TriggerClientEvent("OffDef:SetConfigLock", false);
 
         }
 
-        private void StartGame()
+        private void StartGame(int source, List<object> args, string raw)
         {
             TriggerClientEvent("OffDef:SetConfigLock", true);
+            TriggerClientEvent("OffDef:HideConfig");
+
+            string playerName = API.GetPlayerName(source.ToString());
+
+            string playerTeamStr = Util.GetPlayerTeam(playerName, this.teams);
+            Team team = this.teams[playerTeamStr];
+
+            string role;
+            if (team.IsBlocker(playerName))
+            {
+                role = "Blocker";
+            }
+            else
+            {
+                role = "Runner";
+            }
+
+            TriggerClientEvent("OffDef:StartGame", new { color = playerTeamStr, role = role });
 
         }
 
+        private void LockConfig(int source, List<object> args, string raw)
+        {
+            TriggerClientEvent("OffDef:SetConfigLock", true);
+        }
+
+        private void UnlockConfig(int source, List<object> args, string raw)
+        {
+            TriggerClientEvent("OffDef:SetConfigLock", false);
+        }
+
+        /* -------------------------------------------------------------------------- */
+        /*                            Event Handler Methods                           */
+        /* -------------------------------------------------------------------------- */
         private void AddPlayer(string color, string name)
         {
             Debug.WriteLine("Adding player");
@@ -72,7 +118,7 @@ namespace OffenseDefense.Server
             }
             Team team = this.teams[color];
             team.AddPlayer(name);
-            TriggerClientEvent("OffDef:UpdateTeams", this.teams);
+            TriggerClientEvent("OffDef:UpdateTeams", teams);
         }
 
         private void RemovePlayer(string name)
@@ -114,14 +160,21 @@ namespace OffenseDefense.Server
             }
         }
 
-        private void SetConfigLock(bool newLock)
-        {
-            TriggerClientEvent("OffDef:SetConfigLock", newLock);
-        }
-
         private void SetClientReady(string clientName)
         {
             playersReady[clientName] = true;
+        }
+
+        private void AddTeamPoint(string team)
+        {
+            Team t = this.teams[team];
+            t.IncPoints();
+
+            if (t.HasCompletedRace(currentMap.getTotalCheckpoints()))
+            {
+                // Team completed the race!
+                t.SetRaceCompleted();
+            }
         }
 
         /* -------------------------------------------------------------------------- */
@@ -129,14 +182,23 @@ namespace OffenseDefense.Server
         /* -------------------------------------------------------------------------- */
         private void OnPlayerJoiningServer(string source, string oldID)
         {
-            // TODO: Switch all instances of the user's name to use the user's handle
+            string playerName = API.GetPlayerName(source);
+            if (players.Find(e => e.Name == playerName) == null)
+            {
+                SetPlayers();
+                SetReadyPlayer();
+            }
         }
 
-
-        [Command("hello_server")]
-        public void HelloServer()
+        private void OnPlayerLeavingServer(string source, string reason)
         {
-            Debug.WriteLine("Sure, hello.");
+            string playerName = API.GetPlayerName(source);
+            Player thisUser = players.Find(e => e.Name == playerName);
+            if (thisUser != null)
+            {
+                players.Remove(thisUser);
+                playersReady.Remove(thisUser.Name);
+            }
         }
 
         /* -------------------------------------------------------------------------- */
@@ -154,15 +216,65 @@ namespace OffenseDefense.Server
             return true;
         }
 
+        private void SetPlayers()
+        {
+            players.Clear();
+            foreach (Player p in Players)
+            {
+                players.Add(p);
+            }
+        }
+
+        private void SetReadyPlayer()
+        {
+            playersReady.Clear();
+            foreach (Player p in Players)
+            {
+                playersReady.Add(p.Name, false);
+            }
+        }
+
+        private void Countdown()
+        {
+            if (this.countdownCount <= -2)
+            {
+                this.countdownCount = countdownStart;
+                this.countdownActive = false;
+            }
+            else
+            {
+                TriggerClientEvent("OffDef:CountdownTimer", this.countdownCount);
+                this.countdownCount--;
+            }
+        }
+
         /* -------------------------------------------------------------------------- */
         /*                                    Clock                                   */
         /* -------------------------------------------------------------------------- */
         [Tick]
         public Task OnTick()
         {
-            if (IsAllPlayersReady() && players.Count > 0)
+            // Check if all of the players are ready
+            if (IsAllPlayersReady() && this.playersReady.Count > 0)
             {
-                TriggerClientEvent("OffDef:AllTeamsReady", true);
+                if (oldAllPlayersReady == false)
+                {
+                    this.countdownActive = true;
+                }
+                oldAllPlayersReady = true;
+            }
+
+            if (this.countdownActive)
+            {
+                if (this.currrentCountdownTime < timePerCountdown)
+                {
+                    this.currrentCountdownTime++;
+                }
+                else
+                {
+                    this.currrentCountdownTime = 0;
+                    Countdown();
+                }
             }
             return Task.FromResult(0);
         }

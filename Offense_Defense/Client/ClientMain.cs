@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using CitizenFX.Core;
 using CitizenFX.Core.Native;
+using Newtonsoft.Json;
 
 namespace OffenseDefense.Client
 {
@@ -20,7 +21,7 @@ namespace OffenseDefense.Client
         int menuUpdateTime = 0;
 
         int timeResetButtonPressed = 0;
-        const int timeResetButtonPressedThreshold = 3000;
+        const int timeResetButtonPressedThreshold = 300;
 
         bool configMenuShown = false;
         bool isConfigLocked = true;
@@ -37,67 +38,59 @@ namespace OffenseDefense.Client
             // Commands
             // TODO: Prepend all of the commands with od
             // User Commands
-            API.RegisterCommand("showConfig", new Action(ShowMenu), false);
-            API.RegisterCommand("hideConfig", new Action(HideMenu), false);
-            API.RegisterCommand("joinTeam", new Action<string>(JoinTeam), false);
-            API.RegisterCommand("leaveTeam", new Action(LeaveTeam), false);
-            API.RegisterCommand("setRunner", new Action(JoinRunner), false);
+            API.RegisterCommand("showConfig", new Action<int, List<object>, string>(ShowMenu), false);
+            API.RegisterCommand("hideConfig", new Action<int, List<object>, string>(HideMenu), false);
+            API.RegisterCommand("joinTeam", new Action<int, List<object>, string>(JoinTeam), false);
+            API.RegisterCommand("leaveTeam", new Action<int, List<object>, string>(LeaveTeam), false);
+            API.RegisterCommand("setRunner", new Action<int, List<object>, string>(JoinRunner), false);
 
-            // Global Commands
-            API.RegisterCommand("del", new Action(DeleteCars), false);
-            API.RegisterCommand("startConfig", new Action(TriggerStartConfig), false);
-            API.RegisterCommand("lockConfig", new Action(LockConfig), false);
-            API.RegisterCommand("unlockConfig", new Action(UnlockConfig), false);
-            API.RegisterCommand("startGame", new Action(TriggerStartGame), false);
+            // TODO: REMOVE ME
+            API.RegisterCommand("setSpawn", new Action<int, List<object>, string>(SetCarSpawn), false);
+            API.RegisterCommand("del", new Action<int, List<object>, string>(RemoveAllCars), false);
 
             // Event Handlers
             EventHandlers.Add("OffDef:UpdateTeams", new Action<dynamic>(UpdateTeams));
-            EventHandlers.Add("OffDef:StartGame", new Action<Dictionary<int, dynamic>>(StartGame));
+            EventHandlers.Add("OffDef:StartGame", new Action<dynamic>(StartGame));
             EventHandlers.Add("OffDef:StartConfig", new Action(StartConfig));
             EventHandlers.Add("OffDef:SetSpawn", new Action<Vector3, float>(SetSpawn));
             EventHandlers.Add("OffDef:SetConfigLock", new Action<bool>(SetConfigLock));
             EventHandlers.Add("OffDef:ShowConfig", new Action(ShowMenu));
+            EventHandlers.Add("OffDef:HideConfig", new Action(HideMenu));
+            EventHandlers.Add("OffDef:ShowStartMenu", new Action<dynamic>(ShowStartMenu));
 
+            // NUI Callbacks
         }
 
         /* -------------------------------------------------------------------------- */
         /*                            User Command Methods                            */
         /* -------------------------------------------------------------------------- */
-        private void ShowMenu()
+        private void ShowMenu(int source, List<object> args, string raw)
         {
-            Util.SendNuiMessage(new { teamConfig = true, lockTeamConfig = isConfigLocked });
-            API.SetNuiFocus(false, false);
-            this.configMenuShown = true;
+            ShowMenu();
         }
 
-        private void HideMenu()
+        private void HideMenu(int source, List<object> args, string raw)
         {
-            Util.SendNuiMessage(new { teamConfig = false, lockTeamConfig = isConfigLocked });
-            API.SetNuiFocus(false, false);
-            this.configMenuShown = false;
+            HideMenu();
         }
 
-        private void JoinTeam(string teamColor)
+        private void JoinTeam(int source, List<object> args, string raw)
         {
-            Debug.WriteLine($"Config lock: {isConfigLocked}");
             if (!isConfigLocked)
             {
-                teamColor = teamColor.ToLower();
+                string teamColor = args[0].ToString().ToLower();
 
-                Debug.WriteLine("Checking is color");
                 // Colors.PrintColors();
                 if (Colors.IsColor(teamColor))
                 {
                     string playerName = Game.Player.Name;
-
-                    Debug.WriteLine("Joining team");
 
                     TriggerServerEvent("OffDef:AddPlayer", teamColor, playerName);
                 }
             }
         }
 
-        private void LeaveTeam()
+        private void LeaveTeam(int source, List<object> args, string raw)
         {
             if (!isConfigLocked)
             {
@@ -107,7 +100,7 @@ namespace OffenseDefense.Client
             }
         }
 
-        private void JoinRunner()
+        private void JoinRunner(int source, List<object> args, string raw)
         {
             if (!isConfigLocked)
             {
@@ -117,10 +110,14 @@ namespace OffenseDefense.Client
             }
         }
 
-        /* -------------------------------------------------------------------------- */
-        /*                           Global Commands Methods                          */
-        /* -------------------------------------------------------------------------- */
-        private void DeleteCars()
+        // TODO: DELETE ME
+        private void SetCarSpawn(int source, List<object> args, string raw)
+        {
+            Ped p = Game.Player.Character;
+            offDefGame.SetSpawn(p.Position, p.Heading);
+        }
+
+        private void RemoveAllCars(int source, List<object> args, string raw)
         {
             Vehicle[] cars = World.GetAllVehicles();
             foreach (Vehicle car in cars)
@@ -129,42 +126,28 @@ namespace OffenseDefense.Client
             }
         }
 
-        private void LockConfig()
-        {
-            TriggerServerEvent("OffDef:SetConfigLock", true);
-        }
-
-        private void UnlockConfig()
-        {
-            TriggerServerEvent("OffDef:SetConfigLock", false);
-        }
-
-        private void TriggerStartConfig()
-        {
-            TriggerServerEvent("OffDef:StartConfig");
-        }
-
-        private void TriggerStartGame()
-        {
-            TriggerServerEvent("OffDef:StartGame");
-        }
-
-
         /* -------------------------------------------------------------------------- */
         /*                                Event Methods                               */
         /* -------------------------------------------------------------------------- */
         private void UpdateTeams(dynamic teams)
         {
-            Debug.WriteLine("Updating teams");
+            Debug.WriteLine(JsonConvert.SerializeObject(teams));
             this.teams = teams;
             UpdateMenu();
         }
 
-        private void StartGame(Dictionary<int, dynamic> playerDetails)
+        private void StartConfig()
+        {
+            ShowMenu();
+        }
+
+        private void StartGame(dynamic details)
         {
             string role;
             string color;
-            Util.GetPlayerDetails(playerDetails, out role, out color);
+            Util.GetPlayerDetails(details, out role, out color);
+            Debug.WriteLine(role);
+            Debug.WriteLine(color);
 
             offDefGame.SetRole(role);
             offDefGame.SetTeamColor(color);
@@ -174,11 +157,6 @@ namespace OffenseDefense.Client
         private void SetSpawn(Vector3 newSpawn, float heading)
         {
             offDefGame.SetSpawn(newSpawn, heading);
-        }
-
-        private void StartConfig()
-        {
-            ShowMenu();
         }
 
         private void SetConfigLock(bool newLock)
@@ -194,13 +172,32 @@ namespace OffenseDefense.Client
             }
         }
 
+        private void ShowMenu()
+        {
+            Util.SendNuiMessage(new { teamConfig = true, lockTeamConfig = isConfigLocked });
+            API.SetNuiFocus(false, false);
+            this.configMenuShown = true;
+        }
+
+        private void HideMenu()
+        {
+            Util.SendNuiMessage(new { teamConfig = false, lockTeamConfig = isConfigLocked });
+            API.SetNuiFocus(false, false);
+            this.configMenuShown = false;
+        }
+
+        private void ShowStartMenu(dynamic info)
+        {
+            Util.SendNuiMessage(new { startMenu = true, startInfo = info });
+            API.SetNuiFocus(true, true);
+        }
+
         /* -------------------------------------------------------------------------- */
         /*                                 NUI Methods                                */
         /* -------------------------------------------------------------------------- */
         private void UpdateMenu()
         {
-            // TODO: UPDATE TO NEW VALUE
-            Util.SendNuiMessage(new { teams = teams });
+            Util.SendNuiMessage(new { teamConfig = true, teams = teams, lockTeamConfig = isConfigLocked });
         }
 
         /* -------------------------------------------------------------------------- */

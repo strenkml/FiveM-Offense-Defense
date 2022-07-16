@@ -17,8 +17,14 @@ $(function () {
 
         // Fill in the team data
         if (data.teams != null) {
-          // TODO: Add logic for filling in the table
-          console.log(data.teams);
+          fillInMenu(data.teams.blue);
+          fillInMenu(data.teams.red);
+          fillInMenu(data.teams.green);
+          fillInMenu(data.teams.orange);
+          fillInMenu(data.teams.yellow);
+          fillInMenu(data.teams.pink);
+          fillInMenu(data.teams.purple);
+          fillInMenu(data.teams.white);
         }
 
       } else {
@@ -56,3 +62,17 @@ $(function () {
     }
   });
 });
+
+function fillInMenu(team) {
+  $(`#${team.color} #runner`).text(team.runner);
+  
+  let blockers = "";
+  if (team.blockers.length > 0) {
+    blockers = team.blockers[0];
+    for (i = 1; i < team.blockers.length; i++) {
+      blockers = `${blockers}, ${team.blockers[i]}`;
+    }
+  }
+  $(`#${team.color} #blocker`).text(blockers);
+
+}

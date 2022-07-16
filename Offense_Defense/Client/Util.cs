@@ -33,20 +33,10 @@ namespace OffenseDefense.Client
             return API.SendNuiMessage(JsonConvert.SerializeObject(obj));
         }
 
-        public static void GetPlayerDetails(Dictionary<int, dynamic> details, out string role, out string color)
+        public static void GetPlayerDetails(dynamic details, out string role, out string color)
         {
-            int playerID = API.PlayerId();
-            role = "";
-            color = "";
-
-            foreach (KeyValuePair<int, dynamic> detail in details)
-            {
-                if (detail.Key == playerID)
-                {
-                    role = detail.Value.role;
-                    color = detail.Value.color;
-                }
-            }
+            role = details.role;
+            color = details.color;
         }
 
         public static void RequestModel(string name)

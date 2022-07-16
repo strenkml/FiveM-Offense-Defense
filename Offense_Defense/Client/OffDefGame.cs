@@ -38,7 +38,9 @@ namespace OffenseDefense.Client
             Tick += onTick;
 
             // Events
-            EventHandlers.Add("OffDef:AllTeamsReady", new Action<bool>(UpdateAllClientsReady));
+            EventHandlers.Add("OffDef:CountdownTimer", new Action<int>(SendCountdownTimer));
+            Game.Player.CanControlCharacter = true;
+
         }
 
 
@@ -152,7 +154,6 @@ namespace OffenseDefense.Client
             player.IsCollisionEnabled = true;
             player.IsVisible = true;
 
-
             Game.Player.CanControlCharacter = false;
         }
 
@@ -182,26 +183,13 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         /*                                General Game                                */
         /* -------------------------------------------------------------------------- */
-        public async void StartGame()
+        public void StartGame()
         {
             SpawnCar();
             PreparePlayer();
+            Debug.WriteLine("Client Ready!");
             TriggerServerEvent("OffDef:ClientReady", Game.Player.Name);
-            while (!this.allClientsReady)
-            {
-                await Delay(1000);
-            }
-            StartCountdown();
-            while (this.countdownActive)
-            {
-                await Delay(10);
-            }
-            Game.Player.CanControlCharacter = true;
-        }
-
-        private void StartCountdown()
-        {
-            this.countdownActive = true;
+            this.gameActive = true;
         }
 
         private void DisableControls()
@@ -218,6 +206,11 @@ namespace OffenseDefense.Client
             }
         }
 
+        private void PostCountdown()
+        {
+            Game.Player.CanControlCharacter = true;
+        }
+
         /* -------------------------------------------------------------------------- */
         /*                                     UI                                     */
         /* -------------------------------------------------------------------------- */
@@ -226,31 +219,13 @@ namespace OffenseDefense.Client
             if (this.countdownActive)
             {
                 string outString = "";
-                if (this.currentCount >= 0)
-                {
-
-                    if (this.currrentCountdownTime < timePerCountDown)
-                    {
-                        this.currrentCountdownTime++;
-                    }
-                    else
-                    {
-                        this.currrentCountdownTime = 0;
-                        this.currentCount--;
-                    }
-                }
-                else
-                {
-                    this.countdownActive = false;
-                }
-
-                if (currentCount == 0)
+                if (this.currentCount == 0)
                 {
                     outString = "GO!";
                 }
                 else
                 {
-                    outString = currentCount.ToString();
+                    outString = this.currentCount.ToString();
                 }
 
                 API.SetTextFont(0);
@@ -265,9 +240,19 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         /*                               Event Handlers                               */
         /* -------------------------------------------------------------------------- */
-        private void UpdateAllClientsReady(bool newVal)
+        private void SendCountdownTimer(int count)
         {
-            this.allClientsReady = newVal;
+            if (count == -1)
+            {
+                this.countdownActive = false;
+                PostCountdown();
+            }
+            else
+            {
+                this.currentCount = count;
+                this.countdownActive = true;
+
+            }
         }
     }
 }
