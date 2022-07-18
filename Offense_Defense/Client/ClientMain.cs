@@ -26,6 +26,8 @@ namespace OffenseDefense.Client
         bool configMenuShown = false;
         bool isConfigLocked = true;
 
+        List<Vector3> checkpoints = new List<Vector3>();
+
         /* -------------------------------------------------------------------------- */
         /*                                 Constructor                                */
         /* -------------------------------------------------------------------------- */
@@ -43,6 +45,7 @@ namespace OffenseDefense.Client
             API.RegisterCommand("joinTeam", new Action<int, List<object>, string>(JoinTeam), false);
             API.RegisterCommand("leaveTeam", new Action<int, List<object>, string>(LeaveTeam), false);
             API.RegisterCommand("setRunner", new Action<int, List<object>, string>(JoinRunner), false);
+            API.RegisterCommand("startGame", new Action<int, List<object>, string>(ShowGameMenu), false);
 
             // TODO: REMOVE ME
             API.RegisterCommand("setSpawn", new Action<int, List<object>, string>(SetCarSpawn), false);
@@ -145,12 +148,17 @@ namespace OffenseDefense.Client
         {
             string role;
             string color;
-            Util.GetPlayerDetails(details, out role, out color);
+            Vector3 spawnLoc;
+            float spawnHeading;
+            List<Vector3> checkpointLocs;
+            Util.GetPlayerDetails(details, out role, out color, out spawnLoc, out spawnHeading, out checkpointLocs);
             Debug.WriteLine(role);
             Debug.WriteLine(color);
 
             offDefGame.SetRole(role);
             offDefGame.SetTeamColor(color);
+            offDefGame.SetSpawn(spawnLoc, spawnHeading);
+            offDefGame.SetCheckpoints(checkpointLocs);
             offDefGame.StartGame();
         }
 
@@ -164,31 +172,54 @@ namespace OffenseDefense.Client
             this.isConfigLocked = newLock;
             if (newLock)
             {
-                Util.SendNuiMessage(new { teamConfig = true, lockTeamConfig = true });
+                Payload payload = new Payload();
+                payload.configEnable = true;
+                payload.configLock = true;
+
+                Util.SendNuiMessage(payload);
             }
             else
             {
-                Util.SendNuiMessage(new { teamConfig = true, lockTeamConfig = false });
+                Payload payload = new Payload();
+                payload.configEnable = true;
+                payload.configLock = false;
+
+                Util.SendNuiMessage(payload);
             }
         }
 
         private void ShowMenu()
         {
-            Util.SendNuiMessage(new { teamConfig = true, lockTeamConfig = isConfigLocked });
+            Payload payload = new Payload();
+            payload.configEnable = true;
+            payload.lockTeamConfig = isConfigLocked;
+
+            Util.SendNuiMessage(payload);
+
             API.SetNuiFocus(false, false);
             this.configMenuShown = true;
         }
 
         private void HideMenu()
         {
-            Util.SendNuiMessage(new { teamConfig = false, lockTeamConfig = isConfigLocked });
+            Payload payload = new Payload();
+            payload.configEnable = false;
+            payload.configLock = isConfigLocked;
+
+            Util.SendNuiMessage(payload);
+
             API.SetNuiFocus(false, false);
             this.configMenuShown = false;
         }
 
         private void ShowStartMenu(dynamic info)
         {
-            Util.SendNuiMessage(new { startMenu = true, startInfo = info });
+            Payload payload = new Payload();
+            payload.createGameEnable = true;
+            payload.createGamePayload = info;
+
+            Util.SendNuiMessage(payload);
+
             API.SetNuiFocus(true, true);
         }
 
@@ -197,7 +228,12 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         private void UpdateMenu()
         {
-            Util.SendNuiMessage(new { teamConfig = true, teams = teams, lockTeamConfig = isConfigLocked });
+            Payload payload = new Payload();
+            payload.configEnable = true;
+            payload.configPayload = teams;
+            payload.configLock = isConfigLocked;
+
+            Util.SendNuiMessage(payload);
         }
 
         /* -------------------------------------------------------------------------- */

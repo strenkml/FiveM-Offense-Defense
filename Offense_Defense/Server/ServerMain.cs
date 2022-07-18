@@ -16,6 +16,8 @@ namespace OffenseDefense.Server
         Dictionary<string, bool> playersReady = new Dictionary<string, bool>();
         bool oldAllPlayersReady = false;
 
+        Map currentMap;
+
         // Game Countdown
         const int countdownStart = 5;
         const int timePerCountdown = 1000;
@@ -40,7 +42,7 @@ namespace OffenseDefense.Server
             API.RegisterCommand("lockConfig", new Action<int, List<object>, string>(LockConfig), false);
             API.RegisterCommand("unlockConfig", new Action<int, List<object>, string>(UnlockConfig), false);
             API.RegisterCommand("startConfig", new Action<int, List<object>, string>(StartConfig), false);
-            API.RegisterCommand("startGame", new Action<int, List<object>, string>(StartGame), false);
+            API.RegisterCommand("startGame", new Action<int, List<object>, string>(ShowGameMenu), false);
 
             // Event Handlers
             EventHandlers.Add("OffDef:AddPlayer", new Action<string, string>(AddPlayer));
@@ -70,28 +72,21 @@ namespace OffenseDefense.Server
 
         }
 
-        private void StartGame(int source, List<object> args, string raw)
+        private void ShowGameMenu(int source, List<object> args, string raw)
         {
-            TriggerClientEvent("OffDef:SetConfigLock", true);
-            TriggerClientEvent("OffDef:HideConfig");
-
-            string playerName = API.GetPlayerName(source.ToString());
-
-            string playerTeamStr = Util.GetPlayerTeam(playerName, this.teams);
-            Team team = this.teams[playerTeamStr];
-
-            string role;
-            if (team.IsBlocker(playerName))
+            if (Util.EveryTeamHasRunner(this.team))
             {
-                role = "Blocker";
+                TriggerClientEvent("OffDef:SetConfigLock", true);
+                TriggerClientEvent("OffDef:HideConfig");
+
+                Player p = this.players.Find(e => e.handle == source.ToString());
+
+                TriggerClientEvent("OffDef:ShowGameMenu", p, new { maps = Maps.list });
             }
             else
             {
-                role = "Runner";
+                // Send some error back to the user
             }
-
-            TriggerClientEvent("OffDef:StartGame", new { color = playerTeamStr, role = role });
-
         }
 
         private void LockConfig(int source, List<object> args, string raw)
@@ -177,6 +172,23 @@ namespace OffenseDefense.Server
             }
         }
 
+        private void StartGame(string mapName)
+        {
+            currentMap = Maps.GetMapFromName(mapName);
+
+            foreach (Team t in this.teams)
+            {
+                Player runnerPlayer = this.players.Find(e => e.Name == t.runner);
+                SendStartGameToClient(runnerPlayer, t.color, "Runner");
+
+                foreach (string blocker in t.blockers)
+                {
+                    Player blockerPlayer = this.players.Find(e => e.Name == blocker);
+                    SendStartGameToClient(blockerPlayer, t.color, "Blocker");
+                }
+            }
+        }
+
         /* -------------------------------------------------------------------------- */
         /*                               General Events                               */
         /* -------------------------------------------------------------------------- */
@@ -246,6 +258,11 @@ namespace OffenseDefense.Server
                 TriggerClientEvent("OffDef:CountdownTimer", this.countdownCount);
                 this.countdownCount--;
             }
+        }
+
+        private void SendStartGameToClient(Player player, string color, string role)
+        {
+            TriggerClientEvent("OffDef:StartGame", player, new { checkpoints = currentMap.GetCheckpoints(), spawn = currentMap.GetSpawn(), spawnHeading = currentMapGetSpawnHeading(), color = color, role = role });
         }
 
         /* -------------------------------------------------------------------------- */

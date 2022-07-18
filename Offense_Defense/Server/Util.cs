@@ -31,11 +31,6 @@ namespace OffenseDefense.Server
             return "";
         }
 
-        public static Map GetMapWithName(string name)
-        {
-            return Maps.list.Find(e => e.getName() == name);
-        }
-
         public static bool IsAllTeamsCompletedRace(Dictionary<string, Team> teams, int neededPoints)
         {
             foreach (KeyValuePair<string, Team> kp in teams)
@@ -57,6 +52,18 @@ namespace OffenseDefense.Server
             }
 
             // TODO: Find a way to sort the dictionary
+        }
+
+        public static bool EveryTeamHasRunner(Dictionary<string, Team> teams)
+        {
+            foreach (KeyValuePair<string, team> kp in teams)
+            {
+                if (kp.Value.runner == "")
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

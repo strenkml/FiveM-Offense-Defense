@@ -28,15 +28,18 @@ namespace OffenseDefense.Client
             return API.IsControlPressed(1, button);
         }
 
-        public static bool SendNuiMessage(object obj)
+        public static bool SendNuiMessage(Payload payload)
         {
-            return API.SendNuiMessage(JsonConvert.SerializeObject(obj));
+            return API.SendNuiMessage(JsonConvert.SerializeObject(payload));
         }
 
-        public static void GetPlayerDetails(dynamic details, out string role, out string color)
+        public static void GetPlayerDetails(dynamic details, out string role, out string color, out Vector3 spawn, out float spawnHeading, out List<Vector3> checkpoints)
         {
             role = details.role;
             color = details.color;
+            spawn = details.spawn;
+            spawnHeading = details.spawnHeading;
+            checkpoints = details.checkpoints;
         }
 
         public static void RequestModel(string name)
