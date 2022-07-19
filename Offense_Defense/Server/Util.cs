@@ -32,21 +32,9 @@ namespace OffenseDefense.Server
             return "";
         }
 
-        public static bool IsAllTeamsCompletedRace(Dictionary<string, Team> teams, int neededPoints)
+        public static List<RankedScore> UpdateTeamPositions(Dictionary<string, Team> teams)
         {
-            foreach (KeyValuePair<string, Team> kp in teams)
-            {
-                if (!kp.Value.HasCompletedRace(neededPoints))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        public static List<RankedScore> UpdateUncompleteTeamPositions(Dictionary<string, Team> teams)
-        {
-            List<KeyValuePair<string, Team>> filtered = teams.ToList<KeyValuePair<string, Team>>().FindAll(e => e.Value.GetPlayers().Count != 0 && !e.Value.completedRace);
+            List<KeyValuePair<string, Team>> filtered = teams.ToList<KeyValuePair<string, Team>>().FindAll(e => e.Value.GetPlayers().Count != 0);
 
             List<RankedScore> rankings = new List<RankedScore>();
 
@@ -59,22 +47,6 @@ namespace OffenseDefense.Server
             }
 
             return rankings.OrderByDescending(x => x.points).ToList<RankedScore>();
-        }
-
-        public static List<RankedScore> UpdateCompleteTeamPositions(Dictionary<string, Team> teams)
-        {
-            List<KeyValuePair<string, Team>> filtered = teams.ToList<KeyValuePair<string, Team>>().FindAll(e => e.Value.GetPlayers().Count != 0 && e.Value.completedRace);
-
-            RankedScore[] rankings = new RankedScore[filtered.Count];
-            if (filtered.Count > 0)
-            {
-                foreach (KeyValuePair<string, Team> kp in filtered)
-                {
-                    rankings[kp.Value.completedPosition - 1] = new RankedScore(kp.Key, kp.Value.GetPoints());
-                }
-            }
-
-            return rankings.ToList<RankedScore>();
         }
 
         public static bool EveryTeamHasRunner(Dictionary<string, Team> teams)

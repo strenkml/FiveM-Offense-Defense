@@ -10,9 +10,6 @@ namespace OffenseDefense.Server
         public string runner { get; set; }
         public List<string> blockers { get; set; }
         public int points { get; set; }
-        public bool completedRace { get; set; }
-        public int position { get; set; }
-        public int completedPosition { get; set; }
 
 
         public Team(string color)
@@ -22,9 +19,6 @@ namespace OffenseDefense.Server
             this.blockers = new List<string>();
             this.players = new List<string>();
             this.points = 0;
-            this.completedRace = false;
-            this.position = 0;
-            this.completedPosition = 0;
         }
 
         public string GetColor()
@@ -150,26 +144,14 @@ namespace OffenseDefense.Server
             }
         }
 
-        public bool HasCompletedRace(int neededPoints)
-        {
-            return neededPoints == this.points;
-        }
-
         public void ResetScoring()
         {
             this.points = 0;
-            this.completedRace = false;
         }
 
-        public void SetRaceCompleted()
+        public bool HasCompletedRace(int totalMapCheckpoints)
         {
-            this.completedRace = true;
+            return this.points >= totalMapCheckpoints;
         }
-
-        public void SetCurrentPosition(int newPosition)
-        {
-            this.position = newPosition;
-        }
-
     }
 }

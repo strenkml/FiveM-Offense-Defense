@@ -162,18 +162,10 @@ namespace OffenseDefense.Server
         private void AddTeamPoint(string team)
         {
             Team t = this.teams[team];
-            if (!t.HasCompletedRace(currentMap.GetTotalCheckpoints()))
+            t.IncPoints();
+
+            if (t.HasCompletedRace(currentMap.GetTotalCheckpoints()))
             {
-                t.IncPoints();
-
-                CreateRankedList();
-
-                if (t.HasCompletedRace(currentMap.GetTotalCheckpoints()))
-                {
-                    // Team completed the race!
-                    t.SetRaceCompleted();
-                    t.completedPosition = this.rankedTeams.FindIndex(e => e.team == team) + 1;
-                }
             }
 
             TriggerClientEvent("OffDef:UpdateScoreboard", this.rankedTeams);
@@ -187,7 +179,7 @@ namespace OffenseDefense.Server
             {
                 Player runnerPlayer = this.players.Find(e => e.Name == kp.Value.runner);
 
-                CreateRankedList();
+                this.rankedTeams = Util.UpdateTeamPositions(this.teams);
                 TriggerClientEvent("OffDef:UpdateScoreboard", this.rankedTeams);
 
                 SendStartGameToClient(runnerPlayer, kp.Value.color, "Runner");
@@ -274,15 +266,6 @@ namespace OffenseDefense.Server
         private void SendStartGameToClient(Player player, string color, string role)
         {
             TriggerClientEvent("OffDef:StartGame", player, new { checkpoints = currentMap.GetCheckpoints(), spawn = currentMap.GetSpawn(), spawnHeading = currentMap.GetSpawnHeading(), color = color, role = role });
-        }
-
-        private void CreateRankedList()
-        {
-            List<RankedScore> completedRanks = Util.UpdateCompleteTeamPositions(this.teams);
-            List<RankedScore> uncompletedRanks = Util.UpdateUncompleteTeamPositions(this.teams);
-
-            completedRanks.AddRange(uncompletedRanks);
-            this.rankedTeams = completedRanks;
         }
 
         /* -------------------------------------------------------------------------- */
