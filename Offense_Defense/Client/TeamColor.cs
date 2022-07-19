@@ -1,9 +1,9 @@
 ﻿namespace OffenseDefense.Client
 {
-    class Color
+    class TeamColor
     {
         public int r, g, b;
-        public Color(int r, int g, int b)
+        public TeamColor(int r, int g, int b)
         {
             this.r = r;
             this.g = g;

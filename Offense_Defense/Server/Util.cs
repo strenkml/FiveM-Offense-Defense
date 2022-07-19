@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace OffenseDefense.Server
 {
@@ -43,20 +44,42 @@ namespace OffenseDefense.Server
             return true;
         }
 
-        public static void UpdateTeamPositions(Dictionary<string, Team> teams)
+        public static List<RankedScore> UpdateUncompleteTeamPositions(Dictionary<string, Team> teams)
         {
-            Dictionary<string, int> rankings = new Dictionary<string, int>();
-            foreach (KeyValuePair<string, Team> kp in teams)
+            List<KeyValuePair<string, Team>> filtered = teams.ToList<KeyValuePair<string, Team>>().FindAll(e => e.Value.GetPlayers().Count != 0 && !e.Value.completedRace);
+
+            List<RankedScore> rankings = new List<RankedScore>();
+
+            if (filtered.Count > 0)
             {
-                rankings.Add(kp.Key, kp.Value.GetPoints());
+                foreach (KeyValuePair<string, Team> kp in filtered)
+                {
+                    rankings.Add(new RankedScore(kp.Key, kp.Value.GetPoints()));
+                }
             }
 
-            // TODO: Find a way to sort the dictionary
+            return rankings.OrderByDescending(x => x.points).ToList<RankedScore>();
+        }
+
+        public static List<RankedScore> UpdateCompleteTeamPositions(Dictionary<string, Team> teams)
+        {
+            List<KeyValuePair<string, Team>> filtered = teams.ToList<KeyValuePair<string, Team>>().FindAll(e => e.Value.GetPlayers().Count != 0 && e.Value.completedRace);
+
+            RankedScore[] rankings = new RankedScore[filtered.Count];
+            if (filtered.Count > 0)
+            {
+                foreach (KeyValuePair<string, Team> kp in filtered)
+                {
+                    rankings[kp.Value.completedPosition - 1] = new RankedScore(kp.Key, kp.Value.GetPoints());
+                }
+            }
+
+            return rankings.ToList<RankedScore>();
         }
 
         public static bool EveryTeamHasRunner(Dictionary<string, Team> teams)
         {
-            foreach (KeyValuePair<string, team> kp in teams)
+            foreach (KeyValuePair<string, Team> kp in teams)
             {
                 if (kp.Value.runner == "")
                 {

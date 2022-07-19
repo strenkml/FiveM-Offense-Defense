@@ -10,13 +10,12 @@ namespace OffenseDefense.Server
     {
         readonly string[] teamColors = { "blue", "red", "green", "orange", "yellow", "pink", "purple", "white" };
         Dictionary<string, Team> teams = new Dictionary<string, Team>();
+        List<RankedScore> rankedTeams = new List<RankedScore>();
 
         List<Player> players = new List<Player>();
 
         Dictionary<string, bool> playersReady = new Dictionary<string, bool>();
         bool oldAllPlayersReady = false;
-
-        Map currentMap;
 
         // Game Countdown
         const int countdownStart = 5;
@@ -74,12 +73,12 @@ namespace OffenseDefense.Server
 
         private void ShowGameMenu(int source, List<object> args, string raw)
         {
-            if (Util.EveryTeamHasRunner(this.team))
+            if (Util.EveryTeamHasRunner(this.teams))
             {
                 TriggerClientEvent("OffDef:SetConfigLock", true);
                 TriggerClientEvent("OffDef:HideConfig");
 
-                Player p = this.players.Find(e => e.handle == source.ToString());
+                Player p = this.players.Find(e => e.Handle == source.ToString());
 
                 TriggerClientEvent("OffDef:ShowGameMenu", p, new { maps = Maps.list });
             }
@@ -163,28 +162,40 @@ namespace OffenseDefense.Server
         private void AddTeamPoint(string team)
         {
             Team t = this.teams[team];
-            t.IncPoints();
-
-            if (t.HasCompletedRace(currentMap.getTotalCheckpoints()))
+            if (!t.HasCompletedRace(currentMap.GetTotalCheckpoints()))
             {
-                // Team completed the race!
-                t.SetRaceCompleted();
+                t.IncPoints();
+
+                CreateRankedList();
+
+                if (t.HasCompletedRace(currentMap.GetTotalCheckpoints()))
+                {
+                    // Team completed the race!
+                    t.SetRaceCompleted();
+                    t.completedPosition = this.rankedTeams.FindIndex(e => e.team == team) + 1;
+                }
             }
+
+            TriggerClientEvent("OffDef:UpdateScoreboard", this.rankedTeams);
         }
 
         private void StartGame(string mapName)
         {
             currentMap = Maps.GetMapFromName(mapName);
 
-            foreach (Team t in this.teams)
+            foreach (KeyValuePair<string, Team> kp in this.teams)
             {
-                Player runnerPlayer = this.players.Find(e => e.Name == t.runner);
-                SendStartGameToClient(runnerPlayer, t.color, "Runner");
+                Player runnerPlayer = this.players.Find(e => e.Name == kp.Value.runner);
 
-                foreach (string blocker in t.blockers)
+                CreateRankedList();
+                TriggerClientEvent("OffDef:UpdateScoreboard", this.rankedTeams);
+
+                SendStartGameToClient(runnerPlayer, kp.Value.color, "Runner");
+
+                foreach (string blocker in kp.Value.blockers)
                 {
                     Player blockerPlayer = this.players.Find(e => e.Name == blocker);
-                    SendStartGameToClient(blockerPlayer, t.color, "Blocker");
+                    SendStartGameToClient(blockerPlayer, kp.Value.color, "Blocker");
                 }
             }
         }
@@ -262,7 +273,16 @@ namespace OffenseDefense.Server
 
         private void SendStartGameToClient(Player player, string color, string role)
         {
-            TriggerClientEvent("OffDef:StartGame", player, new { checkpoints = currentMap.GetCheckpoints(), spawn = currentMap.GetSpawn(), spawnHeading = currentMapGetSpawnHeading(), color = color, role = role });
+            TriggerClientEvent("OffDef:StartGame", player, new { checkpoints = currentMap.GetCheckpoints(), spawn = currentMap.GetSpawn(), spawnHeading = currentMap.GetSpawnHeading(), color = color, role = role });
+        }
+
+        private void CreateRankedList()
+        {
+            List<RankedScore> completedRanks = Util.UpdateCompleteTeamPositions(this.teams);
+            List<RankedScore> uncompletedRanks = Util.UpdateUncompleteTeamPositions(this.teams);
+
+            completedRanks.AddRange(uncompletedRanks);
+            this.rankedTeams = completedRanks;
         }
 
         /* -------------------------------------------------------------------------- */

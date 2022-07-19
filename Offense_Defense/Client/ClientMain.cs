@@ -35,8 +35,6 @@ namespace OffenseDefense.Client
         {
             Debug.WriteLine("Hi from OffenseDefense.Client!");
 
-            offDefGame = new OffDefGame();
-
             // Commands
             // TODO: Prepend all of the commands with od
             // User Commands
@@ -45,7 +43,6 @@ namespace OffenseDefense.Client
             API.RegisterCommand("joinTeam", new Action<int, List<object>, string>(JoinTeam), false);
             API.RegisterCommand("leaveTeam", new Action<int, List<object>, string>(LeaveTeam), false);
             API.RegisterCommand("setRunner", new Action<int, List<object>, string>(JoinRunner), false);
-            API.RegisterCommand("startGame", new Action<int, List<object>, string>(ShowGameMenu), false);
 
             // TODO: REMOVE ME
             API.RegisterCommand("setSpawn", new Action<int, List<object>, string>(SetCarSpawn), false);
@@ -55,11 +52,12 @@ namespace OffenseDefense.Client
             EventHandlers.Add("OffDef:UpdateTeams", new Action<dynamic>(UpdateTeams));
             EventHandlers.Add("OffDef:StartGame", new Action<dynamic>(StartGame));
             EventHandlers.Add("OffDef:StartConfig", new Action(StartConfig));
-            EventHandlers.Add("OffDef:SetSpawn", new Action<Vector3, float>(SetSpawn));
             EventHandlers.Add("OffDef:SetConfigLock", new Action<bool>(SetConfigLock));
             EventHandlers.Add("OffDef:ShowConfig", new Action(ShowMenu));
             EventHandlers.Add("OffDef:HideConfig", new Action(HideMenu));
             EventHandlers.Add("OffDef:ShowStartMenu", new Action<dynamic>(ShowStartMenu));
+            EventHandlers.Add("OffDef:UpdateScoreboard", new Action<dynamic>(UpdateScoreboard));
+
 
             // NUI Callbacks
         }
@@ -83,8 +81,8 @@ namespace OffenseDefense.Client
             {
                 string teamColor = args[0].ToString().ToLower();
 
-                // Colors.PrintColors();
-                if (Colors.IsColor(teamColor))
+                // TeamColors.PrintColors();
+                if (TeamColors.IsColor(teamColor))
                 {
                     string playerName = Game.Player.Name;
 
@@ -155,16 +153,13 @@ namespace OffenseDefense.Client
             Debug.WriteLine(role);
             Debug.WriteLine(color);
 
+            offDefGame = new OffDefGame();
+
             offDefGame.SetRole(role);
             offDefGame.SetTeamColor(color);
             offDefGame.SetSpawn(spawnLoc, spawnHeading);
             offDefGame.SetCheckpoints(checkpointLocs);
             offDefGame.StartGame();
-        }
-
-        private void SetSpawn(Vector3 newSpawn, float heading)
-        {
-            offDefGame.SetSpawn(newSpawn, heading);
         }
 
         private void SetConfigLock(bool newLock)
@@ -192,7 +187,7 @@ namespace OffenseDefense.Client
         {
             Payload payload = new Payload();
             payload.configEnable = true;
-            payload.lockTeamConfig = isConfigLocked;
+            payload.configLock = isConfigLocked;
 
             Util.SendNuiMessage(payload);
 
@@ -223,6 +218,15 @@ namespace OffenseDefense.Client
             API.SetNuiFocus(true, true);
         }
 
+        private void UpdateScoreboard(dynamic ranks)
+        {
+            Payload payload = new Payload();
+            payload.scoreboadEnable = true;
+            payload.scoreboardPayload = ranks;
+
+            Util.SendNuiMessage(payload);
+        }
+
         /* -------------------------------------------------------------------------- */
         /*                                 NUI Methods                                */
         /* -------------------------------------------------------------------------- */
@@ -241,20 +245,23 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         private void CheckRestartKeys()
         {
-            int f_key = 23;
+            if (offDefGame != null)
+            {
+                int f_key = 23;
 
-            bool pressed = Util.IsButtonPressed(f_key);
-            if (pressed && timeResetButtonPressed < timeResetButtonPressedThreshold)
-            {
-                timeResetButtonPressed++;
-            }
-            else if (!pressed)
-            {
-                timeResetButtonPressed = 0;
-            }
-            else
-            {
-                offDefGame.RespawnPlayer();
+                bool pressed = Util.IsButtonPressed(f_key);
+                if (pressed && timeResetButtonPressed < timeResetButtonPressedThreshold)
+                {
+                    timeResetButtonPressed++;
+                }
+                else if (!pressed)
+                {
+                    timeResetButtonPressed = 0;
+                }
+                else
+                {
+                    offDefGame.RespawnPlayer();
+                }
             }
         }
 

@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using CitizenFX.Core;
+using CitizenFX.Core.UI;
 using CitizenFX.Core.Native;
 
 namespace OffenseDefense.Client
@@ -15,6 +17,9 @@ namespace OffenseDefense.Client
 
         private List<Vector3> checkpoints;
         private bool[] completedCheckpoints;
+
+        private Blip currentBlip;
+        private int currentCheckpoint;
 
         private string teamColor;
         private string role;
@@ -39,6 +44,8 @@ namespace OffenseDefense.Client
 
             // Events
             EventHandlers.Add("OffDef:CountdownTimer", new Action<int>(SendCountdownTimer));
+            EventHandlers.Add("OffDef:SetSpawn", new Action<Vector3, float>(SetSpawn));
+
             Game.Player.CanControlCharacter = true;
         }
 
@@ -52,9 +59,6 @@ namespace OffenseDefense.Client
             {
                 DisableControls();
                 DrawCountdown();
-
-                DrawCheckpoints();
-                DrawBlips();
 
                 CheckCheckpoints();
             }
@@ -118,7 +122,7 @@ namespace OffenseDefense.Client
                 car = await SpawnBlockerCar(vehicle);
             }
 
-            Color carColor = Colors.list[this.teamColor];
+            TeamColor carColor = TeamColors.list[this.teamColor];
             Util.SetCarColor(car, carColor.r, carColor.g, carColor.b);
 
             car.LockStatus = VehicleLockStatus.StickPlayerInside;
@@ -197,16 +201,16 @@ namespace OffenseDefense.Client
             }
         }
 
-        private void DrawCheckpoints(List<Vector3> checkpoints)
+        private void DrawCheckpoints()
         {
             if (role == "Runner")
             {
                 int count = 0;
-                foreach (Vector3 cp in checkpoints)
+                foreach (Vector3 cp in this.checkpoints)
                 {
                     if (!this.completedCheckpoints[count])
                     {
-                        API.DrawMarkers(1, cp.x, cp.y, cp.z, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 4.0f, 4.0f, 4.0f, 255, 255, 0, 255, false, true, 2, null, null, false);
+                        API.DrawMarker(1, cp.X, cp.Y, cp.Z, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 4.0f, 4.0f, 4.0f, 255, 255, 0, 255, false, true, 2, false, null, null, false);
                         if (count == checkpoints.Count - 1)
                         {
                             // Draw a sub-marker for the finish line symbol
@@ -220,15 +224,17 @@ namespace OffenseDefense.Client
         {
             if (role == "Runner")
             {
-                Vector3 playerLoc = Game.Player.Charactor.Position;
+                Vector3 playerLoc = Game.Player.Character.Position;
                 int checkpointNum = 0;
                 foreach (Vector3 cp in this.checkpoints)
                 {
-                    if (!this.completedCheckpoints[i])
+                    if (!this.completedCheckpoints[checkpointNum])
                     {
-                        if (API.Vdist2(playerLoc.x, playerLoc.y, playerLoc.z, cp.x, cp.y, cp.z) < 4 * 1.12)
+                        if (API.Vdist2(playerLoc.X, playerLoc.Y, playerLoc.Z, cp.X, cp.Y, cp.Z) < (4 * 1.12))
                         {
-                            this.completedCheckpoints[i] = true;
+                            this.completedCheckpoints[checkpointNum] = true;
+                            CreateCheckpointAndBlip();
+
                             TriggerServerEvent("OffDef:AddTeamPoint", this.teamColor);
                         }
                         checkpointNum++;
@@ -237,13 +243,14 @@ namespace OffenseDefense.Client
             }
         }
 
-        /* -------------------------------------------------------------------------- */
-        /*                                    Blips                                   */
-        /* -------------------------------------------------------------------------- */
-        private void DrawBlips()
+        private void CreateCheckpointAndBlip()
         {
+            currentBlip.Delete();
+            API.DeleteCheckpoint(currentCheckpoint);
+
+
             int currentCheckpointIndex = -1;
-            for (int i = 0; i < this.completedCheckpoints; i++)
+            for (int i = 0; i < this.completedCheckpoints.Length; i++)
             {
                 if (this.completedCheckpoints[i] == false)
                 {
@@ -254,12 +261,21 @@ namespace OffenseDefense.Client
 
             if (currentCheckpointIndex != -1)
             {
-                Vector3 currentCheckpoint = this.checkpoints.At(currentCheckpointIndex);
-                Blip blip = API.AddBlipForCoord(currentCheckpoint.x, currentCheckpoint.y, currentCheckpoint.z);
-                API.SetBlipColour(blip, 28);
-                API.SetBlipDisplay(blip, 5);
-                API.SetBlipRoute(blip, true);
-                API.SetBlipSprite(blip, 1);
+                Vector3 currentCheckpointPos = this.checkpoints[currentCheckpointIndex];
+                if (currentCheckpointIndex == this.checkpoints.Count - 1)
+                {
+                    currentCheckpoint = API.CreateCheckpoint(4, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, 4.0f, 255, 255, 0, 255, 0);
+                }
+                else
+                {
+                    Vector3 nextCheckpointPos = this.checkpoints[currentCheckpointIndex + 1];
+                    currentCheckpoint = API.CreateCheckpoint(0, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, nextCheckpointPos.X, nextCheckpointPos.Y, nextCheckpointPos.Z, 4.0f, 255, 255, 0, 255, 0);
+                }
+
+                currentBlip = World.CreateBlip(currentCheckpointPos);
+                currentBlip.Color = BlipColor.Yellow;
+                currentBlip.Sprite = BlipSprite.Standard;
+                currentBlip.ShowRoute = true;
             }
         }
 
@@ -270,6 +286,7 @@ namespace OffenseDefense.Client
         {
             SpawnCar();
             PreparePlayer();
+            CreateCheckpointAndBlip();
 
             Debug.WriteLine("Client Ready!");
             TriggerServerEvent("OffDef:ClientReady", Game.Player.Name);
