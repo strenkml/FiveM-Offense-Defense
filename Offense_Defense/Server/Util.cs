@@ -53,7 +53,7 @@ namespace OffenseDefense.Server
         {
             foreach (KeyValuePair<string, Team> kp in teams)
             {
-                if (kp.Value.runner == "")
+                if (kp.Value.GetPlayers().Count != 0 && kp.Value.runner == "")
                 {
                     return false;
                 }

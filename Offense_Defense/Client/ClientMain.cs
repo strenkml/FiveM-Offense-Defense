@@ -227,6 +227,11 @@ namespace OffenseDefense.Client
             Util.SendNuiMessage(payload);
         }
 
+        private void EndGame(string winner)
+        {
+
+        }
+
         /* -------------------------------------------------------------------------- */
         /*                                 NUI Methods                                */
         /* -------------------------------------------------------------------------- */

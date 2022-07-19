@@ -32,16 +32,14 @@ namespace OffenseDefense.Server
             Debug.WriteLine("Hello from the OffenseDefense Server!");
 
             // Create the teams
-            foreach (string color in teamColors)
-            {
-                teams.Add(color, new Team(color));
-            }
+            CreateTeams();
 
             // Server Commands
             API.RegisterCommand("lockConfig", new Action<int, List<object>, string>(LockConfig), false);
             API.RegisterCommand("unlockConfig", new Action<int, List<object>, string>(UnlockConfig), false);
             API.RegisterCommand("startConfig", new Action<int, List<object>, string>(StartConfig), false);
             API.RegisterCommand("startGame", new Action<int, List<object>, string>(ShowGameMenu), false);
+            API.RegisterCommand("resetTeams", new Action<int, List<object>, string>(ResetTeams), false);
 
             // Event Handlers
             EventHandlers.Add("OffDef:AddPlayer", new Action<string, string>(AddPlayer));
@@ -80,11 +78,11 @@ namespace OffenseDefense.Server
 
                 Player p = this.players.Find(e => e.Handle == source.ToString());
 
-                TriggerClientEvent("OffDef:ShowGameMenu", p, new { maps = Maps.list });
+                TriggerClientEvent("OffDef:ShowGameMenu", p, new { maps = Maps.GetMapNames() });
             }
             else
             {
-                // Send some error back to the user
+                // TODO: Send some error back to the user
             }
         }
 
@@ -96,6 +94,13 @@ namespace OffenseDefense.Server
         private void UnlockConfig(int source, List<object> args, string raw)
         {
             TriggerClientEvent("OffDef:SetConfigLock", false);
+        }
+
+        private void ResetTeams(int source, List<object> args, string raw)
+        {
+            CreateTeams();
+            TriggerClientEvent("OffDef:UpdateTeams", this.teams);
+
         }
 
         /* -------------------------------------------------------------------------- */
@@ -166,6 +171,7 @@ namespace OffenseDefense.Server
 
             if (t.HasCompletedRace(currentMap.GetTotalCheckpoints()))
             {
+                EndGame(team);
             }
 
             TriggerClientEvent("OffDef:UpdateScoreboard", this.rankedTeams);
@@ -266,6 +272,20 @@ namespace OffenseDefense.Server
         private void SendStartGameToClient(Player player, string color, string role)
         {
             TriggerClientEvent("OffDef:StartGame", player, new { checkpoints = currentMap.GetCheckpoints(), spawn = currentMap.GetSpawn(), spawnHeading = currentMap.GetSpawnHeading(), color = color, role = role });
+        }
+
+        private void EndGame(string winningTeam)
+        {
+            TriggerClientEvent("OffDef:EndGame", winningTeam);
+        }
+
+        private void CreateTeams()
+        {
+            teams.Clear();
+            foreach (string color in teamColors)
+            {
+                teams.Add(color, new Team(color));
+            }
         }
 
         /* -------------------------------------------------------------------------- */

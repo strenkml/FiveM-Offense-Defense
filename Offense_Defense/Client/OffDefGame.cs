@@ -34,6 +34,8 @@ namespace OffenseDefense.Client
         private int currentCount = startingNumber;
 
         private bool gameActive = false;
+        private bool gameOver = false;
+        private string winningTeam = "";
 
         /* -------------------------------------------------------------------------- */
         /*                                 Constructor                                */
@@ -45,6 +47,8 @@ namespace OffenseDefense.Client
             // Events
             EventHandlers.Add("OffDef:CountdownTimer", new Action<int>(SendCountdownTimer));
             EventHandlers.Add("OffDef:SetSpawn", new Action<Vector3, float>(SetSpawn));
+            EventHandlers.Add("OffDef:EndGame", new Action<string>(EndGame));
+
 
             Game.Player.CanControlCharacter = true;
         }
@@ -58,6 +62,14 @@ namespace OffenseDefense.Client
             if (gameActive)
             {
                 DisableControls();
+
+                // Remove NPCs
+                API.SetPedDensityMultiplierThisFrame(0.0f);
+                API.SetScenarioPedDensityMultiplierThisFrame(0.0f, 0.0f);
+                API.SetVehicleDensityMultiplierThisFrame(0.0f);
+                API.SetRandomVehicleDensityMultiplierThisFrame(0.0f);
+                API.SetParkedVehicleDensityMultiplierThisFrame(0.0f);
+
                 DrawCountdown();
 
                 CheckCheckpoints();
@@ -203,7 +215,7 @@ namespace OffenseDefense.Client
 
         private void DrawCheckpoints()
         {
-            if (role == "Runner")
+            if (role == "Runner" && this.gameActive)
             {
                 int count = 0;
                 foreach (Vector3 cp in this.checkpoints)
@@ -247,35 +259,36 @@ namespace OffenseDefense.Client
         {
             currentBlip.Delete();
             API.DeleteCheckpoint(currentCheckpoint);
-
-
-            int currentCheckpointIndex = -1;
-            for (int i = 0; i < this.completedCheckpoints.Length; i++)
+            if (this.gameActive)
             {
-                if (this.completedCheckpoints[i] == false)
+                int currentCheckpointIndex = -1;
+                for (int i = 0; i < this.completedCheckpoints.Length; i++)
                 {
-                    currentCheckpointIndex = i;
-                    break;
-                }
-            }
-
-            if (currentCheckpointIndex != -1)
-            {
-                Vector3 currentCheckpointPos = this.checkpoints[currentCheckpointIndex];
-                if (currentCheckpointIndex == this.checkpoints.Count - 1)
-                {
-                    currentCheckpoint = API.CreateCheckpoint(4, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, 4.0f, 255, 255, 0, 255, 0);
-                }
-                else
-                {
-                    Vector3 nextCheckpointPos = this.checkpoints[currentCheckpointIndex + 1];
-                    currentCheckpoint = API.CreateCheckpoint(0, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, nextCheckpointPos.X, nextCheckpointPos.Y, nextCheckpointPos.Z, 4.0f, 255, 255, 0, 255, 0);
+                    if (this.completedCheckpoints[i] == false)
+                    {
+                        currentCheckpointIndex = i;
+                        break;
+                    }
                 }
 
-                currentBlip = World.CreateBlip(currentCheckpointPos);
-                currentBlip.Color = BlipColor.Yellow;
-                currentBlip.Sprite = BlipSprite.Standard;
-                currentBlip.ShowRoute = true;
+                if (currentCheckpointIndex != -1)
+                {
+                    Vector3 currentCheckpointPos = this.checkpoints[currentCheckpointIndex];
+                    if (currentCheckpointIndex == this.checkpoints.Count - 1)
+                    {
+                        currentCheckpoint = API.CreateCheckpoint(4, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, 4.0f, 255, 255, 0, 255, 0);
+                    }
+                    else
+                    {
+                        Vector3 nextCheckpointPos = this.checkpoints[currentCheckpointIndex + 1];
+                        currentCheckpoint = API.CreateCheckpoint(0, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, nextCheckpointPos.X, nextCheckpointPos.Y, nextCheckpointPos.Z, 4.0f, 255, 255, 0, 255, 0);
+                    }
+
+                    currentBlip = World.CreateBlip(currentCheckpointPos);
+                    currentBlip.Color = BlipColor.Yellow;
+                    currentBlip.Sprite = BlipSprite.Standard;
+                    currentBlip.ShowRoute = true;
+                }
             }
         }
 
@@ -304,6 +317,15 @@ namespace OffenseDefense.Client
             Game.Player.CanControlCharacter = true;
         }
 
+        public void EndGame(string winningTeam)
+        {
+            this.winningTeam = winningTeam;
+            this.gameOver = true;
+
+            this.gameActive = false;
+
+        }
+
         /* -------------------------------------------------------------------------- */
         /*                                     UI                                     */
         /* -------------------------------------------------------------------------- */
@@ -324,6 +346,22 @@ namespace OffenseDefense.Client
                 API.SetTextFont(0);
                 API.SetTextScale(0.6f, 0.6f);
                 API.SetTextColour(255, 255, 255, 255);
+                API.SetTextEntry("STRING");
+                API.AddTextComponentString(outString);
+                API.DrawText(0.5f, 0.5f);
+            }
+        }
+
+        private void DrawEndGame()
+        {
+            if (this.gameOver)
+            {
+                string outString = $"Winner: {this.winningTeam}";
+                TeamColor winningColor = TeamColors.list[this.winningTeam];
+
+                API.SetTextFont(0);
+                API.SetTextScale(0.6f, 0.6f);
+                API.SetTextColour(winningColor.r, winningColor.g, winningColor.b, 255);
                 API.SetTextEntry("STRING");
                 API.AddTextComponentString(outString);
                 API.DrawText(0.5f, 0.5f);
