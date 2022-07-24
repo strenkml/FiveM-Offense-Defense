@@ -137,7 +137,6 @@ namespace OffenseDefense.Client
             car.IsEngineRunning = true;
 
             car.PlaceOnGround();
-            car.MarkAsNoLongerNeeded();
 
             this.myCar = car;
             return car;
@@ -187,8 +186,7 @@ namespace OffenseDefense.Client
         private void PreparePlayer()
         {
             Ped player = Game.Player.Character;
-            // player.SetIntoVehicle(this.myCar, VehicleSeat.Driver);
-            API.TaskWarpPedIntoVehicle(API.PlayerPedId(), this.myCar.Handle, -1);
+            player.SetIntoVehicle(this.myCar, VehicleSeat.Driver);
             player.IsCollisionEnabled = true;
             player.IsVisible = true;
 
