@@ -315,7 +315,7 @@ namespace OffenseDefense.Client
         {
             await SpawnCar();
             PreparePlayer();
-            // CreateCheckpointAndBlip();
+            CreateCheckpointAndBlip();
 
             Debug.WriteLine("Client Ready!");
             TriggerServerEvent("OffDef:ClientReady", Game.Player.Name);
