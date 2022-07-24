@@ -74,7 +74,8 @@ td {
 }
 
 input,
-label {
+label,
+select {
   width: 100%;
   margin: 5px;
 }

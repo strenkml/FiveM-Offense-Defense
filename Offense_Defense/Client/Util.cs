@@ -30,27 +30,20 @@ namespace OffenseDefense.Client
 
         public static bool SendNuiMessage(Payload payload)
         {
+            Debug.WriteLine("Sending NUI Message");
             return API.SendNuiMessage(JsonConvert.SerializeObject(payload));
         }
 
         public static void GetPlayerDetails(string jsonDetails, out string role, out string color, out Vector3 spawn, out float spawnHeading, out List<Vector3> checkpoints, out string runnerCar, out string blockerCar)
         {
             GameDetails details = JsonConvert.DeserializeObject<GameDetails>(jsonDetails);
-            Debug.WriteLine("1");
             role = details.role;
-            Debug.WriteLine("2");
             color = details.color;
-            Debug.WriteLine("3");
             spawn = details.spawn;
-            Debug.WriteLine("4");
             spawnHeading = details.heading;
-            Debug.WriteLine("5");
             checkpoints = details.checkpoints;
-            Debug.WriteLine("6");
             runnerCar = details.runnerCar;
-            Debug.WriteLine("7");
             blockerCar = details.blockerCar;
-            Debug.WriteLine("8");
         }
 
         public static void RequestModel(string name)
@@ -76,6 +69,16 @@ namespace OffenseDefense.Client
         {
             return API.IsModelAVehicle(hash) && (API.IsThisModelABike(hash) || API.IsThisModelACar(hash) || API.IsThisModelAnAmphibiousCar(hash) || API.IsThisModelAnAmphibiousQuadbike((int)hash) || API.IsThisModelAQuadbike(hash));
 
+        }
+
+        public static void SendChatMsg(string msg, int r = 255, int g = 255, int b = 255)
+        {
+            TriggerEvent("chat:addMessage", new
+            {
+                color = new[] { r, g, b },
+                multiline = false,
+                args = new[] { msg }
+            });
         }
     }
 }

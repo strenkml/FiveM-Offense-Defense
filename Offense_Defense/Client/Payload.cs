@@ -13,7 +13,6 @@ namespace OffenseDefense.Client
 
         // Create Game Menu
         public bool createGameEnable { get; set; }
-        public object createGamePayload { get; set; }
 
         public Payload()
         {
@@ -25,7 +24,6 @@ namespace OffenseDefense.Client
             this.scoreboardPayload = null;
 
             this.createGameEnable = false;
-            this.createGamePayload = null;
         }
     }
 }

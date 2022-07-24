@@ -43,12 +43,12 @@ namespace OffenseDefense.Client
             // User Commands
             API.RegisterCommand("showConfig", new Action<int, List<object>, string>(ShowMenu), false);
             API.RegisterCommand("hideConfig", new Action<int, List<object>, string>(HideMenu), false);
-            API.RegisterCommand("joinTeam", new Action<int, List<object>, string>(JoinTeam), false);
+            API.RegisterCommand("j", new Action<int, List<object>, string>(JoinTeam), false);
             API.RegisterCommand("leaveTeam", new Action<int, List<object>, string>(LeaveTeam), false);
-            API.RegisterCommand("setRunner", new Action<int, List<object>, string>(JoinRunner), false);
+            API.RegisterCommand("r", new Action<int, List<object>, string>(JoinRunner), false);
 
             // TODO: REMOVE ME
-            API.RegisterCommand("setSpawn", new Action<int, List<object>, string>(SetCarSpawn), false);
+            API.RegisterCommand("s", new Action<int, List<object>, string>(SetCarSpawn), false);
             API.RegisterCommand("del", new Action<int, List<object>, string>(RemoveAllCars), false);
 
             // Event Handlers
@@ -58,8 +58,8 @@ namespace OffenseDefense.Client
             EventHandlers.Add("OffDef:SetConfigLock", new Action<bool>(SetConfigLock));
             EventHandlers.Add("OffDef:ShowConfig", new Action(ShowMenu));
             EventHandlers.Add("OffDef:HideConfig", new Action(HideMenu));
-            EventHandlers.Add("OffDef:ShowGameMenu", new Action<dynamic>(ShowStartMenu));
-            EventHandlers.Add("OffDef:UpdateScoreboard", new Action<dynamic>(UpdateScoreboard));
+            EventHandlers.Add("OffDef:ShowGameMenu", new Action(ShowStartMenu));
+            EventHandlers.Add("OffDef:SendError", new Action<string>(SendError));
 
 
             // NUI Callbacks
@@ -75,10 +75,33 @@ namespace OffenseDefense.Client
                 string runner = data["runner"].ToString();
                 string blocker = data["blocker"].ToString();
 
-                API.SetNuiFocus(false, false);
+                bool error = false;
+                if (!Util.IsPossibleCar(runner) && runner != "")
+                {
+                    error = true;
+                    Util.SendChatMsg("Runner Car invalid", 255, 0, 0);
+                }
 
-                TriggerServerEvent("OffDef:StartingGameFromNUI", map, runner, blocker);
+                if (!Util.IsPossibleCar(blocker) && blocker != "")
+                {
+                    error = true;
+                    Util.SendChatMsg("Blocker Car invalid", 255, 0, 0);
+                }
+
+                if (!error)
+                {
+                    TriggerServerEvent("OffDef:StartingGameFromNUI", map, runner, blocker);
+                }
+                API.SetNuiFocus(false, false);
             });
+
+            API.RegisterNuiCallbackType("error");
+            EventHandlers["__cfx_nui:error"] += new Action<IDictionary<string, object>, CallbackDelegate>((data, cb) =>
+            {
+                Util.SendChatMsg(data["error"].ToString(), 255, 0, 0);
+                API.SetNuiFocus(false, false);
+            });
+
         }
 
         /* -------------------------------------------------------------------------- */
@@ -181,7 +204,7 @@ namespace OffenseDefense.Client
             offDefGame.SetTeamColor(color);
             offDefGame.SetCarTypes(runnerCar, blockerCar);
             // TODO: Uncomment below
-            // offDefGame.SetSpawn(spawnLoc, spawnHeading);
+            offDefGame.SetSpawn(spawnLoc, spawnHeading);
             offDefGame.SetCheckpoints(checkpointLocs);
             offDefGame.StartGame();
         }
@@ -231,29 +254,19 @@ namespace OffenseDefense.Client
             this.configMenuShown = false;
         }
 
-        private void ShowStartMenu(dynamic info)
+        private void ShowStartMenu()
         {
             Payload payload = new Payload();
             payload.createGameEnable = true;
-            payload.createGamePayload = info;
 
             Util.SendNuiMessage(payload);
 
             API.SetNuiFocus(true, true);
         }
 
-        private void UpdateScoreboard(dynamic ranks)
+        private void SendError(string error)
         {
-            Payload payload = new Payload();
-            payload.scoreboadEnable = true;
-            payload.scoreboardPayload = ranks;
-
-            Util.SendNuiMessage(payload);
-        }
-
-        private void EndGame(string winner)
-        {
-
+            Util.SendChatMsg(error, 255, 0, 0);
         }
 
         /* -------------------------------------------------------------------------- */

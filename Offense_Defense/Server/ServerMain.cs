@@ -20,7 +20,7 @@ namespace OffenseDefense.Server
 
         // Game Countdown
         const int countdownStart = 5;
-        const int timePerCountdown = 1000;
+        const int timePerCountdown = 35;
         int currrentCountdownTime = 0;
         bool countdownActive = false;
         int countdownCount = countdownStart;
@@ -61,33 +61,26 @@ namespace OffenseDefense.Server
         /* -------------------------------------------------------------------------- */
         private void StartConfig(int source, List<object> args, string raw)
         {
-            Debug.WriteLine("Starting config");
-
             SetPlayers();
             SetReadyPlayer();
 
             TriggerClientEvent("OffDef:StartConfig");
             TriggerClientEvent("OffDef:SetConfigLock", false);
-
         }
 
         private void ShowGameMenu(int source, List<object> args, string raw)
         {
-            // TODO: Change back and remove
-            // SetPlayers();
-            // if (1 == 1)
+            Player p = this.players.Find(e => e.Handle == source.ToString());
             if (Util.EveryTeamHasRunner(this.teams))
             {
                 TriggerClientEvent("OffDef:SetConfigLock", true);
                 TriggerClientEvent("OffDef:HideConfig");
 
-                Player p = this.players.Find(e => e.Handle == source.ToString());
-
-                TriggerClientEvent(p, "OffDef:ShowGameMenu", new { maps = Maps.GetMapNames() });
+                TriggerClientEvent(p, "OffDef:ShowGameMenu");
             }
             else
             {
-                // TODO: Send some error back to the user
+                TriggerClientEvent(p, "OffDef:SendError", "Not all teams have runners!");
             }
         }
 
@@ -113,7 +106,6 @@ namespace OffenseDefense.Server
         /* -------------------------------------------------------------------------- */
         private void AddPlayer(string color, string name)
         {
-            Debug.WriteLine("Adding player");
             string otherTeam = Util.IsPlayerInOtherTeam(color, name, teams);
             if (otherTeam != "")
             {
@@ -166,6 +158,7 @@ namespace OffenseDefense.Server
 
         private void SetClientReady(string clientName)
         {
+            Debug.WriteLine($"Client: {clientName} is ready");
             playersReady[clientName] = true;
         }
 
@@ -190,19 +183,15 @@ namespace OffenseDefense.Server
             {
                 if (kp.Value.GetPlayers().Count > 0)
                 {
-                    Debug.WriteLine($"Team: {kp.Key}");
                     Player runnerPlayer = this.players.Find(e => e.Name == kp.Value.runner);
 
                     this.rankedTeams = Util.UpdateTeamPositions(this.teams);
                     TriggerClientEvent("OffDef:UpdateScoreboard", this.rankedTeams);
 
-                    Debug.WriteLine("Before runner call");
                     SendStartGameToClient(runnerPlayer, kp.Value.color, "Runner", runnerCar, blockerCar);
-                    Debug.WriteLine("After runner call");
 
                     foreach (string blocker in kp.Value.blockers)
                     {
-                        Debug.WriteLine("Calling for a blocker");
                         Player blockerPlayer = this.players.Find(e => e.Name == blocker);
                         SendStartGameToClient(blockerPlayer, kp.Value.color, "Blocker", runnerCar, blockerCar);
                     }
@@ -269,13 +258,14 @@ namespace OffenseDefense.Server
 
         private void Countdown()
         {
-            if (this.countdownCount <= -2)
+            if (this.countdownCount <= -1)
             {
                 this.countdownCount = countdownStart;
                 this.countdownActive = false;
             }
             else
             {
+                Debug.WriteLine($"Sending {this.countdownCount}");
                 TriggerClientEvent("OffDef:CountdownTimer", this.countdownCount);
                 this.countdownCount--;
             }
@@ -283,9 +273,6 @@ namespace OffenseDefense.Server
 
         private void SendStartGameToClient(Player player, string color, string role, string runnerCar, string blockerCar)
         {
-            Debug.WriteLine(player.Name);
-            Debug.WriteLine(color);
-            Debug.WriteLine(role);
             TriggerClientEvent(player, "OffDef:StartGame", JsonConvert.SerializeObject(new { checkpoints = currentMap.GetCheckpoints(), spawn = currentMap.GetSpawn(), heading = currentMap.GetSpawnHeading(), color = color, role = role, runnerCar = runnerCar, blockerCar = blockerCar }));
         }
 

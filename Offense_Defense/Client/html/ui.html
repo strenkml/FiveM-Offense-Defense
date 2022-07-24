@@ -10,10 +10,10 @@
   <div id="gameMenu" style="display:none">
     <h1>Offense Defense Game Menu</h1>
     <form id="startGameForm">
-      <datalist id="maps">
-      </datalist>
       <label for="mapSelect">Pick a Map:</label>
-      <input list="maps" id="mapSelect" name="mapSelect">
+      <select id="mapSelect" name="mapSelect">
+        <option value="Map 1">Map 1</option>
+      </select>
       <label for="runnerSelect">Runner Car (Leave blank for Voodoo):</label>
       <input type="text" id="runnerSelect" name="runnerSelect">
       <label for="blockerSelect">Blocker Car (Leave blank for Insurgent2):</label>
@@ -21,11 +21,6 @@
       <input id="start" type="submit" value="Start Game">
       <button id="close">Close Menu</button>
     </form>
-    <div id="errorBlock" style="display: none;">
-      <p>Errors:</p>
-      <ul id="errorList">
-      </ul>>
-    </div>
   </div>
   <div id="teamConfig" style="display:none">
     <table align="center">
@@ -90,5 +85,4 @@
     </table>
   </div>
 </body>
-
 </html>

@@ -19,7 +19,7 @@ namespace OffenseDefense.Client
         private bool[] completedCheckpoints;
 
         private Blip currentBlip;
-        private int currentCheckpoint;
+        private int currentCheckpoint = -100;
 
         private string teamColor;
         private string role;
@@ -32,8 +32,6 @@ namespace OffenseDefense.Client
         // Countdown
         private const int timePerCountDown = 1000;
         private const int startingNumber = 5;
-        private int currrentCountdownTime = 0;
-        private bool countdownActive = false;
         private int currentCount = startingNumber;
 
         private bool gameActive = false;
@@ -51,6 +49,7 @@ namespace OffenseDefense.Client
             EventHandlers.Add("OffDef:CountdownTimer", new Action<int>(SendCountdownTimer));
             EventHandlers.Add("OffDef:SetSpawn", new Action<Vector3, float>(SetSpawn));
             EventHandlers.Add("OffDef:EndGame", new Action<string>(EndGame));
+            EventHandlers.Add("OffDef:UpdateScoreboard", new Action<dynamic>(UpdateScoreboard));
 
 
             Game.Player.CanControlCharacter = true;
@@ -72,8 +71,6 @@ namespace OffenseDefense.Client
                 API.SetVehicleDensityMultiplierThisFrame(0.0f);
                 API.SetRandomVehicleDensityMultiplierThisFrame(0.0f);
                 API.SetParkedVehicleDensityMultiplierThisFrame(0.0f);
-
-                DrawCountdown();
 
                 CheckCheckpoints();
             }
@@ -229,25 +226,6 @@ namespace OffenseDefense.Client
             }
         }
 
-        private void DrawCheckpoints()
-        {
-            if (role == "Runner" && this.gameActive)
-            {
-                int count = 0;
-                foreach (Vector3 cp in this.checkpoints)
-                {
-                    if (!this.completedCheckpoints[count])
-                    {
-                        API.DrawMarker(1, cp.X, cp.Y, cp.Z, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 4.0f, 4.0f, 4.0f, 255, 255, 0, 255, false, true, 2, false, null, null, false);
-                        if (count == checkpoints.Count - 1)
-                        {
-                            // Draw a sub-marker for the finish line symbol
-                        }
-                    }
-                }
-            }
-        }
-
         private void CheckCheckpoints()
         {
             if (role == "Runner")
@@ -273,8 +251,16 @@ namespace OffenseDefense.Client
 
         private void CreateCheckpointAndBlip()
         {
-            currentBlip.Delete();
-            API.DeleteCheckpoint(currentCheckpoint);
+            if (currentBlip != null)
+            {
+                currentBlip.Delete();
+            }
+
+            if (currentCheckpoint != -100)
+            {
+                API.DeleteCheckpoint(currentCheckpoint);
+            }
+
             if (this.gameActive)
             {
                 int currentCheckpointIndex = -1;
@@ -313,13 +299,14 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         public async void StartGame()
         {
+            Util.SendChatMsg("New Offense Defense Game is Starting!", 0, 255, 255);
             await SpawnCar();
             PreparePlayer();
+            this.gameActive = true;
             CreateCheckpointAndBlip();
 
             Debug.WriteLine("Client Ready!");
             TriggerServerEvent("OffDef:ClientReady", Game.Player.Name);
-            this.gameActive = true;
         }
 
         private void DisableControls()
@@ -339,7 +326,17 @@ namespace OffenseDefense.Client
             this.gameOver = true;
 
             this.gameActive = false;
+            DrawEndGame();
 
+        }
+
+        private void UpdateScoreboard(dynamic ranks)
+        {
+            Payload payload = new Payload();
+            payload.scoreboadEnable = true;
+            payload.scoreboardPayload = ranks;
+
+            Util.SendNuiMessage(payload);
         }
 
         /* -------------------------------------------------------------------------- */
@@ -347,25 +344,19 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         private void DrawCountdown()
         {
-            if (this.countdownActive)
-            {
-                string outString = "";
-                if (this.currentCount == 0)
-                {
-                    outString = "GO!";
-                }
-                else
-                {
-                    outString = this.currentCount.ToString();
-                }
+            string outString = "";
 
-                API.SetTextFont(0);
-                API.SetTextScale(0.6f, 0.6f);
-                API.SetTextColour(255, 255, 255, 255);
-                API.SetTextEntry("STRING");
-                API.AddTextComponentString(outString);
-                API.DrawText(0.5f, 0.5f);
+            if (this.currentCount == 0)
+            {
+                outString = "GO!";
+                Util.SendChatMsg(outString, 0, 255, 0);
             }
+            else
+            {
+                outString = this.currentCount.ToString();
+                Util.SendChatMsg(outString, 255, 255, 0);
+            }
+
         }
 
         private void DrawEndGame()
@@ -375,12 +366,7 @@ namespace OffenseDefense.Client
                 string outString = $"Winner: {this.winningTeam}";
                 TeamColor winningColor = TeamColors.list[this.winningTeam];
 
-                API.SetTextFont(0);
-                API.SetTextScale(0.6f, 0.6f);
-                API.SetTextColour(winningColor.r, winningColor.g, winningColor.b, 255);
-                API.SetTextEntry("STRING");
-                API.AddTextComponentString(outString);
-                API.DrawText(0.5f, 0.5f);
+                Util.SendChatMsg(outString, winningColor.r, winningColor.g, winningColor.b);
             }
         }
 
@@ -389,16 +375,12 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         private void SendCountdownTimer(int count)
         {
-            if (count == -1)
-            {
-                this.countdownActive = false;
-                PostCountdown();
-            }
-            else
-            {
-                this.currentCount = count;
-                this.countdownActive = true;
+            this.currentCount = count;
+            DrawCountdown();
 
+            if (count == 0)
+            {
+                PostCountdown();
             }
         }
     }
