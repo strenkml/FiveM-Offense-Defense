@@ -35,6 +35,9 @@ namespace OffenseDefense.Client
         {
             Debug.WriteLine("Hi from OffenseDefense.Client!");
 
+            // TODO: Move to startGame function
+            offDefGame = new OffDefGame();
+
             // Commands
             // TODO: Prepend all of the commands with od
             // User Commands
@@ -50,16 +53,32 @@ namespace OffenseDefense.Client
 
             // Event Handlers
             EventHandlers.Add("OffDef:UpdateTeams", new Action<dynamic>(UpdateTeams));
-            EventHandlers.Add("OffDef:StartGame", new Action<dynamic>(StartGame));
+            EventHandlers.Add("OffDef:StartGame", new Action<string>(StartGame));
             EventHandlers.Add("OffDef:StartConfig", new Action(StartConfig));
             EventHandlers.Add("OffDef:SetConfigLock", new Action<bool>(SetConfigLock));
             EventHandlers.Add("OffDef:ShowConfig", new Action(ShowMenu));
             EventHandlers.Add("OffDef:HideConfig", new Action(HideMenu));
-            EventHandlers.Add("OffDef:ShowStartMenu", new Action<dynamic>(ShowStartMenu));
+            EventHandlers.Add("OffDef:ShowGameMenu", new Action<dynamic>(ShowStartMenu));
             EventHandlers.Add("OffDef:UpdateScoreboard", new Action<dynamic>(UpdateScoreboard));
 
 
             // NUI Callbacks
+            API.RegisterNuiCallbackType("startGame");
+            EventHandlers["__cfx_nui:startGame"] += new Action<IDictionary<string, object>, CallbackDelegate>((data, cb) =>
+            {
+                Debug.WriteLine("Received NUI Callback");
+                Debug.WriteLine(data["map"].ToString());
+                Debug.WriteLine(data["runner"].ToString());
+                Debug.WriteLine(data["blocker"].ToString());
+
+                string map = data["map"].ToString();
+                string runner = data["runner"].ToString();
+                string blocker = data["blocker"].ToString();
+
+                API.SetNuiFocus(false, false);
+
+                TriggerServerEvent("OffDef:StartingGameFromNUI", map, runner, blocker);
+            });
         }
 
         /* -------------------------------------------------------------------------- */
@@ -142,22 +161,27 @@ namespace OffenseDefense.Client
             ShowMenu();
         }
 
-        private void StartGame(dynamic details)
+        private void StartGame(string jsonDetails)
         {
             string role;
             string color;
             Vector3 spawnLoc;
             float spawnHeading;
+            string runnerCar;
+            string blockerCar;
             List<Vector3> checkpointLocs;
-            Util.GetPlayerDetails(details, out role, out color, out spawnLoc, out spawnHeading, out checkpointLocs);
+
+            Util.GetPlayerDetails(jsonDetails, out role, out color, out spawnLoc, out spawnHeading, out checkpointLocs, out runnerCar, out blockerCar);
             Debug.WriteLine(role);
             Debug.WriteLine(color);
-
-            offDefGame = new OffDefGame();
+            Debug.WriteLine(runnerCar);
+            Debug.WriteLine(blockerCar);
 
             offDefGame.SetRole(role);
             offDefGame.SetTeamColor(color);
-            offDefGame.SetSpawn(spawnLoc, spawnHeading);
+            offDefGame.SetCarTypes(runnerCar, blockerCar);
+            // TODO: Uncomment below
+            // offDefGame.SetSpawn(spawnLoc, spawnHeading);
             offDefGame.SetCheckpoints(checkpointLocs);
             offDefGame.StartGame();
         }

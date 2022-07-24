@@ -26,6 +26,9 @@ namespace OffenseDefense.Client
 
         private Vehicle myCar;
 
+        private string runnerCar;
+        private string blockerCar;
+
         // Countdown
         private const int timePerCountDown = 1000;
         private const int startingNumber = 5;
@@ -114,24 +117,16 @@ namespace OffenseDefense.Client
             }
         }
 
-        private async void SpawnCar(string vehicle = "")
+        private async Task<Vehicle> SpawnCar()
         {
             Vehicle car;
             if (this.role == "Runner")
             {
-                if (vehicle == "")
-                {
-                    vehicle = "Voodoo";
-                }
-                car = await SpawnRunnerCar(vehicle);
+                car = await SpawnRunnerCar(this.runnerCar);
             }
             else
             {
-                if (vehicle == "")
-                {
-                    vehicle = "Insurgent2";
-                }
-                car = await SpawnBlockerCar(vehicle);
+                car = await SpawnBlockerCar(this.blockerCar);
             }
 
             TeamColor carColor = TeamColors.list[this.teamColor];
@@ -145,11 +140,33 @@ namespace OffenseDefense.Client
             car.MarkAsNoLongerNeeded();
 
             this.myCar = car;
+            return car;
         }
 
         public void DestroyCar()
         {
             this.myCar.Delete();
+        }
+
+        public void SetCarTypes(string runnerCar, string blockerCar)
+        {
+            if (runnerCar == "")
+            {
+                this.runnerCar = "Voodoo";
+            }
+            else
+            {
+                this.runnerCar = runnerCar;
+            }
+
+            if (blockerCar == "")
+            {
+                this.blockerCar = "Insurgent2";
+            }
+            else
+            {
+                this.blockerCar = blockerCar;
+            }
         }
 
         /* -------------------------------------------------------------------------- */
@@ -161,16 +178,17 @@ namespace OffenseDefense.Client
             this.heading = newHeading;
         }
 
-        public void RespawnPlayer()
+        public async void RespawnPlayer()
         {
             DestroyCar();
-            SpawnCar();
+            await SpawnCar();
         }
 
         private void PreparePlayer()
         {
             Ped player = Game.Player.Character;
-            player.SetIntoVehicle(this.myCar, VehicleSeat.Driver);
+            // player.SetIntoVehicle(this.myCar, VehicleSeat.Driver);
+            API.TaskWarpPedIntoVehicle(API.PlayerPedId(), this.myCar.Handle, -1);
             player.IsCollisionEnabled = true;
             player.IsVisible = true;
 
@@ -295,11 +313,11 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         /*                                General Game                                */
         /* -------------------------------------------------------------------------- */
-        public void StartGame()
+        public async void StartGame()
         {
-            SpawnCar();
+            await SpawnCar();
             PreparePlayer();
-            CreateCheckpointAndBlip();
+            // CreateCheckpointAndBlip();
 
             Debug.WriteLine("Client Ready!");
             TriggerServerEvent("OffDef:ClientReady", Game.Player.Name);

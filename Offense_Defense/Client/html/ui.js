@@ -18,14 +18,14 @@ $(function () {
 
       // Fill in the team data
       if (data.configPayload != null) {
-        fillInMenu(data.teams.blue);
-        fillInMenu(data.teams.red);
-        fillInMenu(data.teams.green);
-        fillInMenu(data.teams.orange);
-        fillInMenu(data.teams.yellow);
-        fillInMenu(data.teams.pink);
-        fillInMenu(data.teams.purple);
-        fillInMenu(data.teams.white);
+        fillInMenu(data.configPayload.blue);
+        fillInMenu(data.configPayload.red);
+        fillInMenu(data.configPayload.green);
+        fillInMenu(data.configPayload.orange);
+        fillInMenu(data.configPayload.yellow);
+        fillInMenu(data.configPayload.pink);
+        fillInMenu(data.configPayload.purple);
+        fillInMenu(data.configPayload.white);
       }
     } else {
       this.document.getElementById("teamConfig").style.display = "none";
@@ -122,14 +122,19 @@ $(function () {
     }
 
     if (!error) {
-      $.post(
-        "http://nui2/startGame",
-        JSON.stringify({
+      fetch(`https://${GetParentResourceName()}/startGame`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+        },
+        body: JSON.stringify({
           map: mapValue,
           runner: runnerValue,
           blocker: blockerValue,
-        })
-      );
+        }),
+      })
+        .then((resp) => resp.json())
+        .then((resp) => console.log(resp));
     } else {
       showErrors();
     }

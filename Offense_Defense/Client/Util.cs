@@ -33,13 +33,24 @@ namespace OffenseDefense.Client
             return API.SendNuiMessage(JsonConvert.SerializeObject(payload));
         }
 
-        public static void GetPlayerDetails(dynamic details, out string role, out string color, out Vector3 spawn, out float spawnHeading, out List<Vector3> checkpoints)
+        public static void GetPlayerDetails(string jsonDetails, out string role, out string color, out Vector3 spawn, out float spawnHeading, out List<Vector3> checkpoints, out string runnerCar, out string blockerCar)
         {
+            GameDetails details = JsonConvert.DeserializeObject<GameDetails>(jsonDetails);
+            Debug.WriteLine("1");
             role = details.role;
+            Debug.WriteLine("2");
             color = details.color;
+            Debug.WriteLine("3");
             spawn = details.spawn;
-            spawnHeading = details.spawnHeading;
+            Debug.WriteLine("4");
+            spawnHeading = details.heading;
+            Debug.WriteLine("5");
             checkpoints = details.checkpoints;
+            Debug.WriteLine("6");
+            runnerCar = details.runnerCar;
+            Debug.WriteLine("7");
+            blockerCar = details.blockerCar;
+            Debug.WriteLine("8");
         }
 
         public static void RequestModel(string name)

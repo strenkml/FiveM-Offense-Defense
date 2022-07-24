@@ -6,7 +6,6 @@ namespace OffenseDefense.Server
     class Map
     {
         private string name;
-        private string fileName;
 
         private int totalCheckpoints;
         private List<Vector3> checkpoints;
