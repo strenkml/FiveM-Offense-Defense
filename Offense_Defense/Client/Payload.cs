@@ -8,8 +8,9 @@ namespace OffenseDefense.Client
         public bool configLock { get; set; }
 
         // Game Scoreboard
-        public bool scoreboadEnable { get; set; }
+        public bool scoreboardEnable { get; set; }
         public object scoreboardPayload { get; set; }
+        public int scoreboardNeededPoints { get; set; }
 
         // Create Game Menu
         public bool createGameEnable { get; set; }
@@ -20,8 +21,9 @@ namespace OffenseDefense.Client
             this.configPayload = null;
             this.configLock = false;
 
-            this.scoreboadEnable = false;
+            this.scoreboardEnable = false;
             this.scoreboardPayload = null;
+            this.scoreboardNeededPoints = 0;
 
             this.createGameEnable = false;
         }

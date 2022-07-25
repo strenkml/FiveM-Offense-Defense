@@ -10,5 +10,10 @@ namespace OffenseDefense.Server
             this.team = team;
             this.points = points;
         }
+
+        public override string ToString()
+        {
+            return $"Team: {this.team}  Points: {this.points}";
+        }
     }
 }

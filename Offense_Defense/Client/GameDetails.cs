@@ -9,11 +9,17 @@ namespace OffenseDefense.Client
         [JsonProperty("checkpoints")]
         public List<Vector3> checkpoints { get; set; }
 
-        [JsonProperty("spawn")]
-        public Vector3 spawn { get; set; }
+        [JsonProperty("runnerSpawn")]
+        public Vector3 runnerSpawn { get; set; }
 
-        [JsonProperty("heading")]
-        public float heading { get; set; }
+        [JsonProperty("runnerHeading")]
+        public float runnerHeading { get; set; }
+
+        [JsonProperty("blockerSpawn")]
+        public Vector3 blockerSpawn { get; set; }
+
+        [JsonProperty("blockerHeading")]
+        public float blockerHeading { get; set; }
 
         [JsonProperty("role")]
         public string role { get; set; }

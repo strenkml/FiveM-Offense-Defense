@@ -27,7 +27,6 @@ namespace OffenseDefense.Client
 
         public static bool IsColor(string color)
         {
-            Debug.WriteLine($"Checking color [{color}]");
             return list.ContainsKey(color);
         }
 

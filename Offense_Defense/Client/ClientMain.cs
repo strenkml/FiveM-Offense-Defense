@@ -21,12 +21,14 @@ namespace OffenseDefense.Client
         int menuUpdateTime = 0;
 
         int timeResetButtonPressed = 0;
-        const int timeResetButtonPressedThreshold = 300;
+        const int timeResetButtonPressedThreshold = 100;
 
         bool configMenuShown = false;
         bool isConfigLocked = true;
 
         List<Vector3> checkpoints = new List<Vector3>();
+
+        bool recentReset = false;
 
         /* -------------------------------------------------------------------------- */
         /*                                 Constructor                                */
@@ -48,7 +50,6 @@ namespace OffenseDefense.Client
             API.RegisterCommand("r", new Action<int, List<object>, string>(JoinRunner), false);
 
             // TODO: REMOVE ME
-            API.RegisterCommand("s", new Action<int, List<object>, string>(SetCarSpawn), false);
             API.RegisterCommand("del", new Action<int, List<object>, string>(RemoveAllCars), false);
 
             // Event Handlers
@@ -66,11 +67,6 @@ namespace OffenseDefense.Client
             API.RegisterNuiCallbackType("startGame");
             EventHandlers["__cfx_nui:startGame"] += new Action<IDictionary<string, object>, CallbackDelegate>((data, cb) =>
             {
-                Debug.WriteLine("Received NUI Callback");
-                Debug.WriteLine(data["map"].ToString());
-                Debug.WriteLine(data["runner"].ToString());
-                Debug.WriteLine(data["blocker"].ToString());
-
                 string map = data["map"].ToString();
                 string runner = data["runner"].ToString();
                 string blocker = data["blocker"].ToString();
@@ -153,13 +149,6 @@ namespace OffenseDefense.Client
             }
         }
 
-        // TODO: DELETE ME
-        private void SetCarSpawn(int source, List<object> args, string raw)
-        {
-            Ped p = Game.Player.Character;
-            offDefGame.SetSpawn(p.Position, p.Heading);
-        }
-
         private void RemoveAllCars(int source, List<object> args, string raw)
         {
             Vehicle[] cars = World.GetAllVehicles();
@@ -174,7 +163,6 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         private void UpdateTeams(dynamic teams)
         {
-            Debug.WriteLine(JsonConvert.SerializeObject(teams));
             this.teams = teams;
             UpdateMenu();
         }
@@ -188,23 +176,20 @@ namespace OffenseDefense.Client
         {
             string role;
             string color;
-            Vector3 spawnLoc;
-            float spawnHeading;
+            Vector3 runnerSpawnLoc;
+            float runnerSpawnHeading;
+            Vector3 blockerSpawnLoc;
+            float blockerSpawnHeading;
             string runnerCar;
             string blockerCar;
             List<Vector3> checkpointLocs;
 
-            Util.GetPlayerDetails(jsonDetails, out role, out color, out spawnLoc, out spawnHeading, out checkpointLocs, out runnerCar, out blockerCar);
-            Debug.WriteLine(role);
-            Debug.WriteLine(color);
-            Debug.WriteLine(runnerCar);
-            Debug.WriteLine(blockerCar);
+            Util.GetPlayerDetails(jsonDetails, out role, out color, out runnerSpawnLoc, out runnerSpawnHeading, out blockerSpawnLoc, out blockerSpawnHeading, out checkpointLocs, out runnerCar, out blockerCar);
 
             offDefGame.SetRole(role);
             offDefGame.SetTeamColor(color);
             offDefGame.SetCarTypes(runnerCar, blockerCar);
-            // TODO: Uncomment below
-            offDefGame.SetSpawn(spawnLoc, spawnHeading);
+            offDefGame.SetSpawn(runnerSpawnLoc, runnerSpawnHeading, blockerSpawnLoc, blockerSpawnHeading);
             offDefGame.SetCheckpoints(checkpointLocs);
             offDefGame.StartGame();
         }
@@ -299,10 +284,16 @@ namespace OffenseDefense.Client
                 else if (!pressed)
                 {
                     timeResetButtonPressed = 0;
+                    recentReset = false;
                 }
                 else
                 {
-                    offDefGame.RespawnPlayer();
+                    if (!recentReset)
+                    {
+                        recentReset = true;
+                        offDefGame.RespawnPlayer();
+                        Util.SendChatMsg("Respawned!");
+                    }
                 }
             }
         }
@@ -324,6 +315,25 @@ namespace OffenseDefense.Client
                 {
                     menuUpdateTime++;
                 }
+            }
+
+            if (offDefGame.gameActive)
+            {
+                offDefGame.DisableControls();
+
+                // Remove NPCs
+                API.SetPedDensityMultiplierThisFrame(0.0f);
+                API.SetScenarioPedDensityMultiplierThisFrame(0.0f, 0.0f);
+                API.SetVehicleDensityMultiplierThisFrame(0.0f);
+                API.SetRandomVehicleDensityMultiplierThisFrame(0.0f);
+                API.SetParkedVehicleDensityMultiplierThisFrame(0.0f);
+
+                if (!offDefGame.checkActive)
+                {
+                    offDefGame.CheckCheckpoints();
+                }
+
+                CheckRestartKeys();
             }
 
 

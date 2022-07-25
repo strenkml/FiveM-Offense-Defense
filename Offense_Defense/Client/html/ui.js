@@ -38,20 +38,22 @@ $(function () {
       // Fill the table with the scores
       if (data.scoreboardPayload != null) {
         let table = this.document.getElementById("scoreboardTable");
-        for (let i = 0; i < data.scores.length; i++) {
-          let teamScore = data.scores[i];
+
+        while (table.rows.length > 1) {
+          table.deleteRow(1);
+        }
+
+        for (let i = 0; i < data.scoreboardPayload.length; i++) {
+          let teamScore = data.scoreboardPayload[i];
           let newRow = table.insertRow(-1);
-          console.log(
-            `Pos: ${teamScore.positionItem} Team: ${teamScore.team} Score: ${teamScore.scoreItem}`
-          );
 
           let positionItem = this.document.createElement("td");
           let teamItem = this.document.createElement("td");
           let scoreItem = this.document.createElement("td");
 
-          positionItem.innerHTML = teamScore.position;
-          teamItem.innerHTML = teamScore.team;
-          scoreItem.innerHTML = teamScore.score;
+          positionItem.innerHTML = i + 1;
+          teamItem.innerHTML = capitalizeFirstLetter(teamScore.team);
+          scoreItem.innerHTML = `${teamScore.points}/${data.scoreboardNeededPoints}`;
 
           newRow.appendChild(positionItem);
           newRow.appendChild(teamItem);
@@ -81,6 +83,10 @@ $(function () {
       }
     }
     $(`#${team.color} #blocker`).text(blockers);
+  }
+
+  function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
   }
 
   $("#start").click(function () {

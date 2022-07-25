@@ -9,14 +9,18 @@ namespace OffenseDefense.Server
 
         private int totalCheckpoints;
         private List<Vector3> checkpoints;
-        private Vector3 spawnLoc;
-        private float spawnHeading;
+        private Vector3 runnerSpawnLoc;
+        private float runnerSpawnHeading;
+        private Vector3 blockerSpawnLoc;
+        private float blockerSpawnHeading;
 
-        public Map(string name, Vector3 spawn, float spawnHeading, List<Vector3> checkpoints)
+        public Map(string name, Vector3 runnerSpawn, float runnerSpawnHeading, Vector3 blockerSpawn, float blockerSpawnHeading, List<Vector3> checkpoints)
         {
             this.name = name;
-            this.spawnLoc = spawn;
-            this.spawnHeading = spawnHeading;
+            this.runnerSpawnLoc = runnerSpawn;
+            this.runnerSpawnHeading = runnerSpawnHeading;
+            this.blockerSpawnLoc = blockerSpawn;
+            this.blockerSpawnHeading = blockerSpawnHeading;
             this.checkpoints = checkpoints;
             this.totalCheckpoints = checkpoints.Count;
         }
@@ -36,14 +40,24 @@ namespace OffenseDefense.Server
             return this.checkpoints;
         }
 
-        public Vector3 GetSpawn()
+        public Vector3 GetRunnerSpawn()
         {
-            return this.spawnLoc;
+            return this.runnerSpawnLoc;
         }
 
-        public float GetSpawnHeading()
+        public float GetRunnerSpawnHeading()
         {
-            return this.spawnHeading;
+            return this.runnerSpawnHeading;
+        }
+
+        public Vector3 GetBlockerSpawn()
+        {
+            return this.blockerSpawnLoc;
+        }
+
+        public float GetBlockerSpawnHeading()
+        {
+            return this.blockerSpawnHeading;
         }
     }
 }

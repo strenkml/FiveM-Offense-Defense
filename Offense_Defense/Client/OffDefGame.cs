@@ -12,14 +12,17 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         /*                                  Variables                                 */
         /* -------------------------------------------------------------------------- */
-        private Vector3 spawn;
-        private float heading;
+        private Vector3 runnerSpawn;
+        private float runnerHeading;
+        private Vector3 blockerSpawn;
+        private float blockerHeading;
 
         private List<Vector3> checkpoints;
         private bool[] completedCheckpoints;
 
         private Blip currentBlip;
         private int currentCheckpoint = -100;
+        private int currentCheckpointIndex = -1;
 
         private string teamColor;
         private string role;
@@ -34,49 +37,24 @@ namespace OffenseDefense.Client
         private const int startingNumber = 5;
         private int currentCount = startingNumber;
 
-        private bool gameActive = false;
+        public bool gameActive = false;
         private bool gameOver = false;
         private string winningTeam = "";
+
+        public bool checkActive = false;
 
         /* -------------------------------------------------------------------------- */
         /*                                 Constructor                                */
         /* -------------------------------------------------------------------------- */
         public OffDefGame()
         {
-            Tick += onTick;
-
             // Events
             EventHandlers.Add("OffDef:CountdownTimer", new Action<int>(SendCountdownTimer));
-            EventHandlers.Add("OffDef:SetSpawn", new Action<Vector3, float>(SetSpawn));
+            EventHandlers.Add("OffDef:SetSpawn", new Action<string, Vector3>(SetTeamSpawn));
             EventHandlers.Add("OffDef:EndGame", new Action<string>(EndGame));
-            EventHandlers.Add("OffDef:UpdateScoreboard", new Action<dynamic>(UpdateScoreboard));
-
+            EventHandlers.Add("OffDef:UpdateScoreboard", new Action<dynamic, int>(UpdateScoreboard));
 
             Game.Player.CanControlCharacter = true;
-        }
-
-
-        /* -------------------------------------------------------------------------- */
-        /*                                    Clock                                   */
-        /* -------------------------------------------------------------------------- */
-        private async Task onTick()
-        {
-            if (gameActive)
-            {
-                DisableControls();
-
-                // Remove NPCs
-                API.SetPedDensityMultiplierThisFrame(0.0f);
-                API.SetScenarioPedDensityMultiplierThisFrame(0.0f, 0.0f);
-                API.SetVehicleDensityMultiplierThisFrame(0.0f);
-                API.SetRandomVehicleDensityMultiplierThisFrame(0.0f);
-                API.SetParkedVehicleDensityMultiplierThisFrame(0.0f);
-
-                CheckCheckpoints();
-            }
-
-
-            await Task.FromResult(0);
         }
 
         /* -------------------------------------------------------------------------- */
@@ -87,7 +65,7 @@ namespace OffenseDefense.Client
             if (Util.IsPossibleCar(vehicle))
             {
                 Util.RequestModel(vehicle);
-                Vehicle car = await World.CreateVehicle(vehicle, this.spawn, this.heading);
+                Vehicle car = await World.CreateVehicle(vehicle, this.runnerSpawn, this.runnerHeading);
                 Util.SetCarLicensePlate(car, "RUNNER");
 
                 return car;
@@ -103,7 +81,7 @@ namespace OffenseDefense.Client
             if (Util.IsPossibleCar(vehicle))
             {
                 Util.RequestModel(vehicle);
-                Vehicle car = await World.CreateVehicle(vehicle, this.spawn, this.heading);
+                Vehicle car = await World.CreateVehicle(vehicle, this.blockerSpawn, this.blockerHeading);
                 Util.SetCarLicensePlate(car, "BLOCKER");
 
                 return car;
@@ -168,26 +146,32 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         /*                                Spawn Control                               */
         /* -------------------------------------------------------------------------- */
-        public void SetSpawn(Vector3 newSpawn, float newHeading)
+        public void SetSpawn(Vector3 newRunnerSpawn, float newRunnerHeading, Vector3 newBlockerSpawn, float newBlockerHeading)
         {
-            this.spawn = newSpawn;
-            this.heading = newHeading;
+            this.runnerSpawn = newRunnerSpawn;
+            this.runnerHeading = newRunnerHeading;
+            this.blockerSpawn = newBlockerSpawn;
+            this.blockerHeading = newBlockerHeading;
         }
 
         public async void RespawnPlayer()
         {
             DestroyCar();
             await SpawnCar();
+            PreparePlayer(false);
         }
 
-        private void PreparePlayer()
+        private void PreparePlayer(bool startingGame = true)
         {
             Ped player = Game.Player.Character;
             player.SetIntoVehicle(this.myCar, VehicleSeat.Driver);
             player.IsCollisionEnabled = true;
             player.IsVisible = true;
 
-            Game.Player.CanControlCharacter = false;
+            if (startingGame)
+            {
+                Game.Player.CanControlCharacter = false;
+            }
         }
 
         /* -------------------------------------------------------------------------- */
@@ -226,27 +210,27 @@ namespace OffenseDefense.Client
             }
         }
 
-        private void CheckCheckpoints()
+        public async void CheckCheckpoints()
         {
+            this.checkActive = true;
             if (role == "Runner")
             {
                 Vector3 playerLoc = Game.Player.Character.Position;
-                int checkpointNum = 0;
-                foreach (Vector3 cp in this.checkpoints)
-                {
-                    if (!this.completedCheckpoints[checkpointNum])
-                    {
-                        if (API.Vdist2(playerLoc.X, playerLoc.Y, playerLoc.Z, cp.X, cp.Y, cp.Z) < (4 * 1.12))
-                        {
-                            this.completedCheckpoints[checkpointNum] = true;
-                            CreateCheckpointAndBlip();
+                Vector3 cpLoc = checkpoints[currentCheckpointIndex];
 
-                            TriggerServerEvent("OffDef:AddTeamPoint", this.teamColor);
-                        }
-                        checkpointNum++;
+                if (!this.completedCheckpoints[currentCheckpointIndex])
+                {
+                    if (API.Vdist2(playerLoc.X, playerLoc.Y, playerLoc.Z, cpLoc.X, cpLoc.Y, cpLoc.Z) < (4 * 1.12))
+                    {
+                        this.completedCheckpoints[currentCheckpointIndex] = true;
+                        CreateCheckpointAndBlip();
+
+                        TriggerServerEvent("OffDef:AddTeamPoint", this.teamColor);
                     }
                 }
             }
+            await Delay(10);
+            this.checkActive = false;
         }
 
         private void CreateCheckpointAndBlip()
@@ -263,7 +247,6 @@ namespace OffenseDefense.Client
 
             if (this.gameActive)
             {
-                int currentCheckpointIndex = -1;
                 for (int i = 0; i < this.completedCheckpoints.Length; i++)
                 {
                     if (this.completedCheckpoints[i] == false)
@@ -299,7 +282,7 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         public async void StartGame()
         {
-            Util.SendChatMsg("New Offense Defense Game is Starting!", 0, 255, 255);
+            Util.SendChatMsg("Offense Defense is starting!", 0, 255, 255);
             await SpawnCar();
             PreparePlayer();
             this.gameActive = true;
@@ -309,7 +292,7 @@ namespace OffenseDefense.Client
             TriggerServerEvent("OffDef:ClientReady", Game.Player.Name);
         }
 
-        private void DisableControls()
+        public void DisableControls()
         {
             Game.DisableControlThisFrame(1, Control.VehicleExit);
             Game.DisableControlThisFrame(1, Control.VehicleAttack);
@@ -328,13 +311,25 @@ namespace OffenseDefense.Client
             this.gameActive = false;
             DrawEndGame();
 
+            if (currentBlip != null)
+            {
+                currentBlip.Delete();
+            }
+
+            if (currentCheckpoint != -100)
+            {
+                API.DeleteCheckpoint(currentCheckpoint);
+            }
+
+            Game.Player.Character.Kill();
         }
 
-        private void UpdateScoreboard(dynamic ranks)
+        private void UpdateScoreboard(dynamic ranks, int totalCheckpoints)
         {
             Payload payload = new Payload();
-            payload.scoreboadEnable = true;
+            payload.scoreboardEnable = true;
             payload.scoreboardPayload = ranks;
+            payload.scoreboardNeededPoints = totalCheckpoints;
 
             Util.SendNuiMessage(payload);
         }
@@ -382,6 +377,12 @@ namespace OffenseDefense.Client
             {
                 PostCountdown();
             }
+        }
+
+        private void SetTeamSpawn(string color, Vector3 pos)
+        {
+            Debug.WriteLine("setting the new spawn");
+            SetSpawn(pos, 0.0f, pos, 0.0f);
         }
     }
 }

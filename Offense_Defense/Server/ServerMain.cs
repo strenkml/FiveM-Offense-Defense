@@ -46,7 +46,6 @@ namespace OffenseDefense.Server
             EventHandlers.Add("OffDef:AddPlayer", new Action<string, string>(AddPlayer));
             EventHandlers.Add("OffDef:RemovePlayer", new Action<string>(RemovePlayer));
             EventHandlers.Add("OffDef:SetRunner", new Action<string>(SetRunner));
-            EventHandlers.Add("OffDef:SetTeamSpawnLocation", new Action<string, Vector3, float>(SetTeamSpawn));
             EventHandlers.Add("OffDef:ClientReady", new Action<string>(SetClientReady));
             EventHandlers.Add("OffDef:AddTeamPoint", new Action<string>(AddTeamPoint));
             EventHandlers.Add("OffDef:StartingGameFromNUI", new Action<string, string, string>(StartGame));
@@ -143,15 +142,16 @@ namespace OffenseDefense.Server
             }
         }
 
-        private void SetTeamSpawn(string color, Vector3 newSpawn, float newHeading)
+        private void SetTeamSpawn(string color, int checkpointIndex)
         {
             List<string> teamPlayers = this.teams[color].GetPlayers();
+            Vector3 pos = currentMap.GetCheckpoints()[checkpointIndex];
             foreach (string tp in teamPlayers)
             {
                 Player p = players.Find(e => e.Name == tp);
                 if (p != null)
                 {
-                    TriggerClientEvent(p, "OffDef:SetSpawn", newSpawn, newHeading);
+                    TriggerClientEvent(p, "OffDef:SetSpawn", color, pos);
                 }
             }
         }
@@ -167,12 +167,16 @@ namespace OffenseDefense.Server
             Team t = this.teams[team];
             t.IncPoints();
 
+            Debug.WriteLine($"Team {team} got a point. Current points {t.GetPoints()}");
+
             if (t.HasCompletedRace(currentMap.GetTotalCheckpoints()))
             {
+                Debug.WriteLine($"Winner Winner Chicken Diner: {team}");
                 EndGame(team);
             }
-
-            TriggerClientEvent("OffDef:UpdateScoreboard", this.rankedTeams);
+            this.rankedTeams = Util.UpdateTeamPositions(this.teams);
+            TriggerClientEvent("OffDef:UpdateScoreboard", this.rankedTeams, currentMap.GetTotalCheckpoints());
+            SetTeamSpawn(team, t.GetPoints() - 1);
         }
 
         private void StartGame(string mapName, string runnerCar, string blockerCar)
@@ -186,7 +190,9 @@ namespace OffenseDefense.Server
                     Player runnerPlayer = this.players.Find(e => e.Name == kp.Value.runner);
 
                     this.rankedTeams = Util.UpdateTeamPositions(this.teams);
-                    TriggerClientEvent("OffDef:UpdateScoreboard", this.rankedTeams);
+
+                    Debug.WriteLine(string.Join(", ", this.rankedTeams));
+                    TriggerClientEvent("OffDef:UpdateScoreboard", this.rankedTeams, currentMap.GetTotalCheckpoints());
 
                     SendStartGameToClient(runnerPlayer, kp.Value.color, "Runner", runnerCar, blockerCar);
 
@@ -265,7 +271,6 @@ namespace OffenseDefense.Server
             }
             else
             {
-                Debug.WriteLine($"Sending {this.countdownCount}");
                 TriggerClientEvent("OffDef:CountdownTimer", this.countdownCount);
                 this.countdownCount--;
             }
@@ -273,7 +278,18 @@ namespace OffenseDefense.Server
 
         private void SendStartGameToClient(Player player, string color, string role, string runnerCar, string blockerCar)
         {
-            TriggerClientEvent(player, "OffDef:StartGame", JsonConvert.SerializeObject(new { checkpoints = currentMap.GetCheckpoints(), spawn = currentMap.GetSpawn(), heading = currentMap.GetSpawnHeading(), color = color, role = role, runnerCar = runnerCar, blockerCar = blockerCar }));
+            TriggerClientEvent(player, "OffDef:StartGame", JsonConvert.SerializeObject(new
+            {
+                checkpoints = currentMap.GetCheckpoints(),
+                runnerSpawn = currentMap.GetRunnerSpawn(),
+                runnerHeading = currentMap.GetRunnerSpawnHeading(),
+                blockerSpawn = currentMap.GetBlockerSpawn(),
+                blockerHeading = currentMap.GetBlockerSpawnHeading(),
+                color = color,
+                role = role,
+                runnerCar = runnerCar,
+                blockerCar = blockerCar
+            }));
         }
 
         private void EndGame(string winningTeam)

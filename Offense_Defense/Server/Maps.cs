@@ -5,7 +5,10 @@ namespace OffenseDefense.Server
 {
     class Maps
     {
-        private static Map map1 = new Map("Map 1", new Vector3(-1435.734f, 797.371f, 183.721f), 0.0f, new List<Vector3>() { new Vector3(-1454.072f, 856.981f, 183.720f) });
+        private static Map map1 = new Map("Map 1",
+        new Vector3(-1435.734f, 797.371f, 183.721f), 0.0f,
+        new Vector3(-1435.734f, 797.371f, 183.721f), 0.0f,
+        new List<Vector3>() { new Vector3(-1454.072f, 856.981f, 183.720f - 1f), new Vector3(-1526.266f, 940.338f, 167.508f - 1f) });
 
         public static List<Map> list = new List<Map>() { map1 };
 

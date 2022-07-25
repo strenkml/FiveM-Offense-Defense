@@ -64,7 +64,7 @@ td {
 }
 
 #scoreboardTable {
-  background-color: transparent;
+  background-color: gray;
 }
 
 #gameMenu {
@@ -83,4 +83,11 @@ select {
 input[type="text"],
 #mapSelect {
   height: 30px;
+}
+
+#scoreboard {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  padding: 3%;
 }

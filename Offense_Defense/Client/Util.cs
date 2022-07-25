@@ -30,17 +30,18 @@ namespace OffenseDefense.Client
 
         public static bool SendNuiMessage(Payload payload)
         {
-            Debug.WriteLine("Sending NUI Message");
             return API.SendNuiMessage(JsonConvert.SerializeObject(payload));
         }
 
-        public static void GetPlayerDetails(string jsonDetails, out string role, out string color, out Vector3 spawn, out float spawnHeading, out List<Vector3> checkpoints, out string runnerCar, out string blockerCar)
+        public static void GetPlayerDetails(string jsonDetails, out string role, out string color, out Vector3 runnerSpawn, out float runnerSpawnHeading, out Vector3 blockerSpawn, out float blockerSpawnHeading, out List<Vector3> checkpoints, out string runnerCar, out string blockerCar)
         {
             GameDetails details = JsonConvert.DeserializeObject<GameDetails>(jsonDetails);
             role = details.role;
             color = details.color;
-            spawn = details.spawn;
-            spawnHeading = details.heading;
+            runnerSpawn = details.runnerSpawn;
+            runnerSpawnHeading = details.runnerHeading;
+            blockerSpawn = details.blockerSpawn;
+            blockerSpawnHeading = details.blockerHeading;
             checkpoints = details.checkpoints;
             runnerCar = details.runnerCar;
             blockerCar = details.blockerCar;
