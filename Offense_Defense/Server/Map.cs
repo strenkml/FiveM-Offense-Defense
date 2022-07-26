@@ -6,22 +6,19 @@ namespace OffenseDefense.Server
     class Map
     {
         private string name;
+        private Dictionary<string, Shared.MapMarker> runnerStarting;
+        private Dictionary<string, Shared.MapMarker> blockerStarting;
+        private List<Shared.MapMarker> checkpoints;
 
         private int totalCheckpoints;
-        private List<Vector3> checkpoints;
-        private Vector3 runnerSpawnLoc;
-        private float runnerSpawnHeading;
-        private Vector3 blockerSpawnLoc;
-        private float blockerSpawnHeading;
 
-        public Map(string name, Vector3 runnerSpawn, float runnerSpawnHeading, Vector3 blockerSpawn, float blockerSpawnHeading, List<Vector3> checkpoints)
+        public Map(string name, Dictionary<string, Shared.MapMarker> runnerStarting, Dictionary<string, Shared.MapMarker> blockerStarting, List<Shared.MapMarker> checkpoints)
         {
             this.name = name;
-            this.runnerSpawnLoc = runnerSpawn;
-            this.runnerSpawnHeading = runnerSpawnHeading;
-            this.blockerSpawnLoc = blockerSpawn;
-            this.blockerSpawnHeading = blockerSpawnHeading;
+            this.runnerStarting = runnerStarting;
+            this.blockerStarting = blockerStarting;
             this.checkpoints = checkpoints;
+
             this.totalCheckpoints = checkpoints.Count;
         }
 
@@ -35,29 +32,39 @@ namespace OffenseDefense.Server
             return this.name;
         }
 
-        public List<Vector3> GetCheckpoints()
+        public List<Shared.MapMarker> GetCheckpoints()
         {
             return this.checkpoints;
         }
 
-        public Vector3 GetRunnerSpawn()
+        public Vector3 GetRunnerStartingSpawn(string team)
         {
-            return this.runnerSpawnLoc;
+            return this.runnerStarting[team].position;
         }
 
-        public float GetRunnerSpawnHeading()
+        public float GetRunnerStartingHeading(string team)
         {
-            return this.runnerSpawnHeading;
+            return this.runnerStarting[team].heading;
         }
 
-        public Vector3 GetBlockerSpawn()
+        public Vector3 GetBlockerStartingSpawn(string team)
         {
-            return this.blockerSpawnLoc;
+            return this.blockerStarting[team].position;
         }
 
-        public float GetBlockerSpawnHeading()
+        public float GetBlockerStartingHeading(string team)
         {
-            return this.blockerSpawnHeading;
+            return this.blockerStarting[team].heading;
+        }
+
+        public Dictionary<string, Shared.MapMarker> GetAllRunnerStarting()
+        {
+            return this.runnerStarting;
+        }
+
+        public Dictionary<string, Shared.MapMarker> GetAllBlockerStarting()
+        {
+            return this.blockerStarting;
         }
     }
 }

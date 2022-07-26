@@ -17,7 +17,7 @@ namespace OffenseDefense.Client
         private Vector3 blockerSpawn;
         private float blockerHeading;
 
-        private List<Vector3> checkpoints;
+        private List<Shared.MapMarker> checkpoints;
         private bool[] completedCheckpoints;
 
         private Blip currentBlip;
@@ -50,7 +50,6 @@ namespace OffenseDefense.Client
         {
             // Events
             EventHandlers.Add("OffDef:CountdownTimer", new Action<int>(SendCountdownTimer));
-            EventHandlers.Add("OffDef:SetSpawn", new Action<string, Vector3>(SetTeamSpawn));
             EventHandlers.Add("OffDef:EndGame", new Action<string>(EndGame));
             EventHandlers.Add("OffDef:UpdateScoreboard", new Action<dynamic, int>(UpdateScoreboard));
 
@@ -200,7 +199,7 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         /*                                 Checkpoints                                */
         /* -------------------------------------------------------------------------- */
-        public void SetCheckpoints(List<Vector3> checkpoints)
+        public void SetCheckpoints(List<Shared.MapMarker> checkpoints)
         {
             this.checkpoints = checkpoints;
             this.completedCheckpoints = new bool[checkpoints.Count];
@@ -216,11 +215,11 @@ namespace OffenseDefense.Client
             if (role == "Runner")
             {
                 Vector3 playerLoc = Game.Player.Character.Position;
-                Vector3 cpLoc = checkpoints[currentCheckpointIndex];
+                Vector3 cpLoc = checkpoints[currentCheckpointIndex].position;
 
                 if (!this.completedCheckpoints[currentCheckpointIndex])
                 {
-                    if (API.Vdist2(playerLoc.X, playerLoc.Y, playerLoc.Z, cpLoc.X, cpLoc.Y, cpLoc.Z) < (4 * 1.12))
+                    if (Util.distanceBetweenPointsNoHeight(playerLoc, cpLoc) < 5)
                     {
                         this.completedCheckpoints[currentCheckpointIndex] = true;
                         CreateCheckpointAndBlip();
@@ -258,15 +257,15 @@ namespace OffenseDefense.Client
 
                 if (currentCheckpointIndex != -1)
                 {
-                    Vector3 currentCheckpointPos = this.checkpoints[currentCheckpointIndex];
+                    Vector3 currentCheckpointPos = this.checkpoints[currentCheckpointIndex].position;
                     if (currentCheckpointIndex == this.checkpoints.Count - 1)
                     {
-                        currentCheckpoint = API.CreateCheckpoint(4, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, 4.0f, 255, 255, 0, 255, 0);
+                        currentCheckpoint = API.CreateCheckpoint(4, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, 8.0f, 255, 255, 0, 255, 0);
                     }
                     else
                     {
-                        Vector3 nextCheckpointPos = this.checkpoints[currentCheckpointIndex + 1];
-                        currentCheckpoint = API.CreateCheckpoint(0, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, nextCheckpointPos.X, nextCheckpointPos.Y, nextCheckpointPos.Z, 4.0f, 255, 255, 0, 255, 0);
+                        Vector3 nextCheckpointPos = this.checkpoints[currentCheckpointIndex + 1].position;
+                        currentCheckpoint = API.CreateCheckpoint(0, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, nextCheckpointPos.X, nextCheckpointPos.Y, nextCheckpointPos.Z, 8.0f, 255, 255, 0, 255, 0);
                     }
 
                     currentBlip = World.CreateBlip(currentCheckpointPos);
@@ -377,12 +376,6 @@ namespace OffenseDefense.Client
             {
                 PostCountdown();
             }
-        }
-
-        private void SetTeamSpawn(string color, Vector3 pos)
-        {
-            Debug.WriteLine("setting the new spawn");
-            SetSpawn(pos, 0.0f, pos, 0.0f);
         }
     }
 }

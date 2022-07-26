@@ -2,6 +2,7 @@ using CitizenFX.Core;
 using CitizenFX.Core.Native;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System;
 
 namespace OffenseDefense.Client
 {
@@ -33,7 +34,7 @@ namespace OffenseDefense.Client
             return API.SendNuiMessage(JsonConvert.SerializeObject(payload));
         }
 
-        public static void GetPlayerDetails(string jsonDetails, out string role, out string color, out Vector3 runnerSpawn, out float runnerSpawnHeading, out Vector3 blockerSpawn, out float blockerSpawnHeading, out List<Vector3> checkpoints, out string runnerCar, out string blockerCar)
+        public static void GetPlayerDetails(string jsonDetails, out string role, out string color, out Vector3 runnerSpawn, out float runnerSpawnHeading, out Vector3 blockerSpawn, out float blockerSpawnHeading, out List<Shared.MapMarker> checkpoints, out string runnerCar, out string blockerCar)
         {
             GameDetails details = JsonConvert.DeserializeObject<GameDetails>(jsonDetails);
             role = details.role;
@@ -80,6 +81,11 @@ namespace OffenseDefense.Client
                 multiline = false,
                 args = new[] { msg }
             });
+        }
+
+        public static float distanceBetweenPointsNoHeight(Vector3 c1, Vector3 c2)
+        {
+            return (float)Math.Sqrt(Math.Pow(c1.X - c2.X, 2) + Math.Pow(c1.Y - c2.Y, 2));
         }
     }
 }

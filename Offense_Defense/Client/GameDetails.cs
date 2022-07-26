@@ -7,7 +7,7 @@ namespace OffenseDefense.Client
     class GameDetails
     {
         [JsonProperty("checkpoints")]
-        public List<Vector3> checkpoints { get; set; }
+        public List<Shared.MapMarker> checkpoints { get; set; }
 
         [JsonProperty("runnerSpawn")]
         public Vector3 runnerSpawn { get; set; }

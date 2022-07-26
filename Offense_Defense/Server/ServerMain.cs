@@ -142,20 +142,6 @@ namespace OffenseDefense.Server
             }
         }
 
-        private void SetTeamSpawn(string color, int checkpointIndex)
-        {
-            List<string> teamPlayers = this.teams[color].GetPlayers();
-            Vector3 pos = currentMap.GetCheckpoints()[checkpointIndex];
-            foreach (string tp in teamPlayers)
-            {
-                Player p = players.Find(e => e.Name == tp);
-                if (p != null)
-                {
-                    TriggerClientEvent(p, "OffDef:SetSpawn", color, pos);
-                }
-            }
-        }
-
         private void SetClientReady(string clientName)
         {
             Debug.WriteLine($"Client: {clientName} is ready");
@@ -176,7 +162,7 @@ namespace OffenseDefense.Server
             }
             this.rankedTeams = Util.UpdateTeamPositions(this.teams);
             TriggerClientEvent("OffDef:UpdateScoreboard", this.rankedTeams, currentMap.GetTotalCheckpoints());
-            SetTeamSpawn(team, t.GetPoints() - 1);
+            TriggerClientEvent("OffDef:SetTeamSpawn", team, currentMap.GetCheckpoints()[t.GetPoints() - 1].position, currentMap.GetCheckpoints()[t.GetPoints() - 1].heading);
         }
 
         private void StartGame(string mapName, string runnerCar, string blockerCar)
@@ -281,10 +267,10 @@ namespace OffenseDefense.Server
             TriggerClientEvent(player, "OffDef:StartGame", JsonConvert.SerializeObject(new
             {
                 checkpoints = currentMap.GetCheckpoints(),
-                runnerSpawn = currentMap.GetRunnerSpawn(),
-                runnerHeading = currentMap.GetRunnerSpawnHeading(),
-                blockerSpawn = currentMap.GetBlockerSpawn(),
-                blockerHeading = currentMap.GetBlockerSpawnHeading(),
+                runnerSpawn = currentMap.GetRunnerStartingSpawn(color),
+                runnerHeading = currentMap.GetRunnerStartingHeading(color),
+                blockerSpawn = currentMap.GetBlockerStartingSpawn(color),
+                blockerHeading = currentMap.GetBlockerStartingHeading(color),
                 color = color,
                 role = role,
                 runnerCar = runnerCar,

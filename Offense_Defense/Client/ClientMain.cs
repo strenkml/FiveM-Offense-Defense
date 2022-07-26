@@ -41,16 +41,16 @@ namespace OffenseDefense.Client
             offDefGame = new OffDefGame();
 
             // Commands
-            // TODO: Prepend all of the commands with od
             // User Commands
             API.RegisterCommand("showConfig", new Action<int, List<object>, string>(ShowMenu), false);
             API.RegisterCommand("hideConfig", new Action<int, List<object>, string>(HideMenu), false);
-            API.RegisterCommand("j", new Action<int, List<object>, string>(JoinTeam), false);
+            API.RegisterCommand("joinTeam", new Action<int, List<object>, string>(JoinTeam), false);
             API.RegisterCommand("leaveTeam", new Action<int, List<object>, string>(LeaveTeam), false);
-            API.RegisterCommand("r", new Action<int, List<object>, string>(JoinRunner), false);
+            API.RegisterCommand("runner", new Action<int, List<object>, string>(JoinRunner), false);
 
             // TODO: REMOVE ME
             API.RegisterCommand("del", new Action<int, List<object>, string>(RemoveAllCars), false);
+            API.RegisterCommand("car", new Action(Car), false);
 
             // Event Handlers
             EventHandlers.Add("OffDef:UpdateTeams", new Action<dynamic>(UpdateTeams));
@@ -61,6 +61,8 @@ namespace OffenseDefense.Client
             EventHandlers.Add("OffDef:HideConfig", new Action(HideMenu));
             EventHandlers.Add("OffDef:ShowGameMenu", new Action(ShowStartMenu));
             EventHandlers.Add("OffDef:SendError", new Action<string>(SendError));
+            EventHandlers.Add("OffDef:SetTeamSpawn", new Action<string, Vector3, float>(SetTeamSpawn));
+
 
 
             // NUI Callbacks
@@ -158,6 +160,11 @@ namespace OffenseDefense.Client
             }
         }
 
+        private async void Car()
+        {
+            Vehicle car = await World.CreateVehicle(VehicleHash.Voodoo, Game.Player.Character.Position);
+        }
+
         /* -------------------------------------------------------------------------- */
         /*                                Event Methods                               */
         /* -------------------------------------------------------------------------- */
@@ -182,7 +189,7 @@ namespace OffenseDefense.Client
             float blockerSpawnHeading;
             string runnerCar;
             string blockerCar;
-            List<Vector3> checkpointLocs;
+            List<Shared.MapMarker> checkpointLocs;
 
             Util.GetPlayerDetails(jsonDetails, out role, out color, out runnerSpawnLoc, out runnerSpawnHeading, out blockerSpawnLoc, out blockerSpawnHeading, out checkpointLocs, out runnerCar, out blockerCar);
 
@@ -252,6 +259,15 @@ namespace OffenseDefense.Client
         private void SendError(string error)
         {
             Util.SendChatMsg(error, 255, 0, 0);
+        }
+
+        private void SetTeamSpawn(string color, Vector3 pos, float heading)
+        {
+            if (color == offDefGame.GetTeamColor())
+            {
+                Debug.WriteLine("setting the new spawn");
+                offDefGame.SetSpawn(pos, heading, pos, heading);
+            }
         }
 
         /* -------------------------------------------------------------------------- */
