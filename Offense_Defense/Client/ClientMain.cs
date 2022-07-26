@@ -29,6 +29,9 @@ namespace OffenseDefense.Client
         List<Vector3> checkpoints = new List<Vector3>();
 
         bool recentReset = false;
+        bool collision = true;
+        int timeSinceReset = 0;
+        const int resetNoCollisionTime = 100;
 
         /* -------------------------------------------------------------------------- */
         /*                                 Constructor                                */
@@ -193,6 +196,8 @@ namespace OffenseDefense.Client
 
             Util.GetPlayerDetails(jsonDetails, out role, out color, out runnerSpawnLoc, out runnerSpawnHeading, out blockerSpawnLoc, out blockerSpawnHeading, out checkpointLocs, out runnerCar, out blockerCar);
 
+            this.collision = true;
+
             offDefGame.SetRole(role);
             offDefGame.SetTeamColor(color);
             offDefGame.SetCarTypes(runnerCar, blockerCar);
@@ -307,6 +312,9 @@ namespace OffenseDefense.Client
                     if (!recentReset)
                     {
                         recentReset = true;
+                        this.timeSinceReset = 0;
+                        this.collision = false;
+                        Game.Player.Character.IsCollisionEnabled = false;
                         offDefGame.RespawnPlayer();
                         Util.SendChatMsg("Respawned!");
                     }
@@ -350,6 +358,21 @@ namespace OffenseDefense.Client
                 }
 
                 CheckRestartKeys();
+            }
+
+            if (this.collision == false)
+            {
+                if (this.timeSinceReset < resetNoCollisionTime)
+                {
+                    this.timeSinceReset++;
+                }
+                else
+                {
+                    this.timeSinceReset = 0;
+                    collision = true;
+                    Game.Player.Character.IsCollisionEnabled = true;
+                }
+
             }
 
 

@@ -357,7 +357,7 @@ namespace OffenseDefense.Client
         {
             if (this.gameOver)
             {
-                string outString = $"Winner: {this.winningTeam}";
+                string outString = $"Winner: {Util.FirstLetterToUpper(this.winningTeam)}";
                 TeamColor winningColor = TeamColors.list[this.winningTeam];
 
                 Util.SendChatMsg(outString, winningColor.r, winningColor.g, winningColor.b);
