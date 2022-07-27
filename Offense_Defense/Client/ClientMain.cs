@@ -47,12 +47,13 @@ namespace OffenseDefense.Client
             // User Commands
             API.RegisterCommand("showConfig", new Action<int, List<object>, string>(ShowMenu), false);
             API.RegisterCommand("hideConfig", new Action<int, List<object>, string>(HideMenu), false);
-            API.RegisterCommand("joinTeam", new Action<int, List<object>, string>(JoinTeam), false);
-            API.RegisterCommand("leaveTeam", new Action<int, List<object>, string>(LeaveTeam), false);
+            API.RegisterCommand("join", new Action<int, List<object>, string>(JoinTeam), false);
+            API.RegisterCommand("leave", new Action<int, List<object>, string>(LeaveTeam), false);
             API.RegisterCommand("runner", new Action<int, List<object>, string>(JoinRunner), false);
 
             // TODO: REMOVE ME
-            API.RegisterCommand("del", new Action<int, List<object>, string>(RemoveAllCars), false);
+            API.RegisterCommand("delAll", new Action<int, List<object>, string>(RemoveAllCars), false);
+            API.RegisterCommand("del", new Action<int, List<object>, string>(RemoveMyCar), false);
             API.RegisterCommand("car", new Action(Car), false);
 
             // Event Handlers
@@ -161,6 +162,11 @@ namespace OffenseDefense.Client
             {
                 car.Delete();
             }
+        }
+
+        private void RemoveMyCar(int source, List<object> args, string raw)
+        {
+            offDefGame.DestroyCar();
         }
 
         private async void Car()
@@ -314,7 +320,8 @@ namespace OffenseDefense.Client
                         recentReset = true;
                         this.timeSinceReset = 0;
                         this.collision = false;
-                        Game.Player.Character.IsCollisionEnabled = false;
+                        offDefGame.SetCarCollision(false);
+
                         offDefGame.RespawnPlayer();
                         Util.SendChatMsg("Respawned!");
                     }
@@ -370,7 +377,7 @@ namespace OffenseDefense.Client
                 {
                     this.timeSinceReset = 0;
                     collision = true;
-                    Game.Player.Character.IsCollisionEnabled = true;
+                    offDefGame.SetCarCollision(true);
                 }
 
             }

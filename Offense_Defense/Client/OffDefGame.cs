@@ -109,6 +109,9 @@ namespace OffenseDefense.Client
             car.LockStatus = VehicleLockStatus.StickPlayerInside;
             car.IsExplosionProof = true;
             car.IsEngineRunning = true;
+            car.RadioStation = RadioStation.RadioOff;
+            car.IsCollisionEnabled = true;
+            car.IsDriveable = false;
 
             car.PlaceOnGround();
 
@@ -142,6 +145,11 @@ namespace OffenseDefense.Client
             }
         }
 
+        public void SetCarCollision(bool isCollision)
+        {
+            this.myCar.IsCollisionEnabled = isCollision;
+        }
+
         /* -------------------------------------------------------------------------- */
         /*                                Spawn Control                               */
         /* -------------------------------------------------------------------------- */
@@ -167,10 +175,10 @@ namespace OffenseDefense.Client
             player.IsCollisionEnabled = true;
             player.IsVisible = true;
 
-            if (startingGame)
-            {
-                Game.Player.CanControlCharacter = false;
-            }
+            // if (startingGame)
+            // {
+            //     Game.Player.CanControlCharacter = false;
+            // }
         }
 
         /* -------------------------------------------------------------------------- */
@@ -234,44 +242,47 @@ namespace OffenseDefense.Client
 
         private void CreateCheckpointAndBlip()
         {
-            if (currentBlip != null)
+            if (role == "Runner")
             {
-                currentBlip.Delete();
-            }
-
-            if (currentCheckpoint != -100)
-            {
-                API.DeleteCheckpoint(currentCheckpoint);
-            }
-
-            if (this.gameActive)
-            {
-                for (int i = 0; i < this.completedCheckpoints.Length; i++)
+                if (currentBlip != null)
                 {
-                    if (this.completedCheckpoints[i] == false)
-                    {
-                        currentCheckpointIndex = i;
-                        break;
-                    }
+                    currentBlip.Delete();
                 }
 
-                if (currentCheckpointIndex != -1)
+                if (currentCheckpoint != -100)
                 {
-                    Vector3 currentCheckpointPos = this.checkpoints[currentCheckpointIndex].position;
-                    if (currentCheckpointIndex == this.checkpoints.Count - 1)
+                    API.DeleteCheckpoint(currentCheckpoint);
+                }
+
+                if (this.gameActive)
+                {
+                    for (int i = 0; i < this.completedCheckpoints.Length; i++)
                     {
-                        currentCheckpoint = API.CreateCheckpoint(4, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, 8.0f, 255, 255, 0, 255, 0);
-                    }
-                    else
-                    {
-                        Vector3 nextCheckpointPos = this.checkpoints[currentCheckpointIndex + 1].position;
-                        currentCheckpoint = API.CreateCheckpoint(0, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, nextCheckpointPos.X, nextCheckpointPos.Y, nextCheckpointPos.Z, 8.0f, 255, 255, 0, 255, 0);
+                        if (this.completedCheckpoints[i] == false)
+                        {
+                            currentCheckpointIndex = i;
+                            break;
+                        }
                     }
 
-                    currentBlip = World.CreateBlip(currentCheckpointPos);
-                    currentBlip.Color = BlipColor.Yellow;
-                    currentBlip.Sprite = BlipSprite.Standard;
-                    currentBlip.ShowRoute = true;
+                    if (currentCheckpointIndex != -1)
+                    {
+                        Vector3 currentCheckpointPos = this.checkpoints[currentCheckpointIndex].position;
+                        if (currentCheckpointIndex == this.checkpoints.Count - 1)
+                        {
+                            currentCheckpoint = API.CreateCheckpoint(4, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, 8.0f, 255, 255, 0, 255, 0);
+                        }
+                        else
+                        {
+                            Vector3 nextCheckpointPos = this.checkpoints[currentCheckpointIndex + 1].position;
+                            currentCheckpoint = API.CreateCheckpoint(0, currentCheckpointPos.X, currentCheckpointPos.Y, currentCheckpointPos.Z, nextCheckpointPos.X, nextCheckpointPos.Y, nextCheckpointPos.Z, 8.0f, 255, 255, 0, 255, 0);
+                        }
+
+                        currentBlip = World.CreateBlip(currentCheckpointPos);
+                        currentBlip.Color = BlipColor.Yellow;
+                        currentBlip.Sprite = BlipSprite.Standard;
+                        currentBlip.ShowRoute = true;
+                    }
                 }
             }
         }
@@ -299,7 +310,8 @@ namespace OffenseDefense.Client
 
         private void PostCountdown()
         {
-            Game.Player.CanControlCharacter = true;
+            // Game.Player.CanControlCharacter = true;
+            this.myCar.IsDriveable = false;
         }
 
         public void EndGame(string winningTeam)
