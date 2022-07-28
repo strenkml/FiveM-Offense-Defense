@@ -43,6 +43,7 @@ namespace OffenseDefense.Server
             API.RegisterCommand("startGame", new Action<int, List<object>, string>(ShowGameMenu), false);
             API.RegisterCommand("resetTeams", new Action<int, List<object>, string>(ResetTeams), false);
 
+
             // Event Handlers
             EventHandlers.Add("OffDef:AddPlayer", new Action<string, string>(AddPlayer));
             EventHandlers.Add("OffDef:RemovePlayer", new Action<string>(RemovePlayer));
@@ -50,6 +51,9 @@ namespace OffenseDefense.Server
             EventHandlers.Add("OffDef:ClientReady", new Action<string>(SetClientReady));
             EventHandlers.Add("OffDef:AddTeamPoint", new Action<string>(AddTeamPoint));
             EventHandlers.Add("OffDef:StartingGameFromNUI", new Action<string, string, string>(StartGame));
+
+            // TODO: Remove me
+            EventHandlers.Add("OffDef:testSpawns", new Action<string>(TestSpawns));
 
             // General Handlers
             EventHandlers.Add("playerJoining", new Action<string, string>(OnPlayerJoiningServer));
@@ -99,6 +103,36 @@ namespace OffenseDefense.Server
             CreateTeams();
             TriggerClientEvent("OffDef:UpdateTeams", this.teams);
 
+        }
+
+        // TODO: Remove me
+        private void TestSpawns(string ps)
+        {
+            Player p = null;
+            foreach (Player pl in Players)
+            {
+                if (pl.Name == ps)
+                {
+                    p = pl;
+                    break;
+                }
+            }
+
+            if (p != null)
+            {
+                Map map = Maps.GetMapFromName("Map 1");
+                List<Shared.MapMarker> runners = map.GetRunnerStartingMarkers();
+                foreach (Shared.MapMarker m in runners)
+                {
+                    TriggerClientEvent(p, "OffDef:SpawnCarAtLoc", "Runner", m.position, m.heading);
+                }
+
+                List<Shared.MapMarker> blockers = map.GetBlockerStartingMarkers();
+                foreach (Shared.MapMarker m in runners)
+                {
+                    TriggerClientEvent(p, "OffDef:SpawnCarAtLoc", "Blocker", m.position, m.heading);
+                }
+            }
         }
 
         /* -------------------------------------------------------------------------- */

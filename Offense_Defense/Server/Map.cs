@@ -47,13 +47,15 @@ namespace OffenseDefense.Server
             return this.totalCheckpoints;
         }
 
-        private List<Shared.MapMarker> CreateStartingMarkers(Shared.MapMarker startingMarker) {
+        private List<Shared.MapMarker> CreateStartingMarkers(Shared.MapMarker startingMarker)
+        {
             List<Shared.MapMarker> list = new List<Shared.MapMarker>();
 
             // Create the backrow of spawns
             list.Add(startingMarker);
             Shared.MapMarker startingPoint = startingMarker;
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 3; i++)
+            {
                 startingPoint = Shared.Coords.GetRight(startingPoint, 5);
                 list.Add(startingPoint);
             }
@@ -62,7 +64,8 @@ namespace OffenseDefense.Server
             startingPoint = Shared.Coords.GetFront(startingPoint, 5);
             list.Add(startingPoint);
 
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 3; i++)
+            {
                 startingPoint = Shared.Coords.GetLeft(startingPoint, 5);
                 list.Add(startingPoint);
             }
@@ -72,27 +75,33 @@ namespace OffenseDefense.Server
             return list;
         }
 
-        public List<Shared.MapMarker> GetRunnerStartingMarkers() {
+        public List<Shared.MapMarker> GetRunnerStartingMarkers()
+        {
             return this.runnerStarting;
         }
 
-        public List<Shared.MapMarker> GetBlockerStartingMarkers() {
+        public List<Shared.MapMarker> GetBlockerStartingMarkers()
+        {
             return this.blockerStarting;
         }
 
-        public Shared.MapMarker GetRunnerStartingPosition(int index) {
+        public Vector3 GetRunnerStartingPosition(int index)
+        {
             return this.runnerStarting[index].position;
         }
 
-        public Shared.MapMarker GetRunnerStartingHeading(int index) {
+        public float GetRunnerStartingHeading(int index)
+        {
             return this.runnerStarting[index].heading;
         }
 
-        public Shared.MapMarker GetBlockerStartingPosition(int index) {
+        public Vector3 GetBlockerStartingPosition(int index)
+        {
             return this.blockerStarting[index].position;
         }
 
-        public Shared.MapMarker GetBlockerStartingHeading(int index) {
+        public float GetBlockerStartingHeading(int index)
+        {
             return this.blockerStarting[index].heading;
         }
     }

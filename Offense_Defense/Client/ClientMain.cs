@@ -54,7 +54,9 @@ namespace OffenseDefense.Client
             // TODO: REMOVE ME
             API.RegisterCommand("delAll", new Action<int, List<object>, string>(RemoveAllCars), false);
             API.RegisterCommand("del", new Action<int, List<object>, string>(RemoveMyCar), false);
-            API.RegisterCommand("car", new Action(Car), false);
+            API.RegisterCommand("car", new Action<int, List<object>, string>(Car), false);
+            API.RegisterCommand("testSpawns", new Action(TestSpawns), false);
+            API.RegisterCommand("tp", new Action(tpToMap), false);
 
             // Event Handlers
             EventHandlers.Add("OffDef:UpdateTeams", new Action<dynamic>(UpdateTeams));
@@ -67,7 +69,8 @@ namespace OffenseDefense.Client
             EventHandlers.Add("OffDef:SendError", new Action<string>(SendError));
             EventHandlers.Add("OffDef:SetTeamSpawn", new Action<string, Vector3, float>(SetTeamSpawn));
 
-
+            // TODO: Remove me
+            EventHandlers.Add("OffDef:SpawnCarAtLoc", new Action<string, Vector3, float>(SpawnCarAtLoc));
 
             // NUI Callbacks
             API.RegisterNuiCallbackType("startGame");
@@ -169,9 +172,23 @@ namespace OffenseDefense.Client
             offDefGame.DestroyCar();
         }
 
-        private async void Car()
+        private async void Car(int source, List<object> args, string raw)
         {
-            Vehicle car = await World.CreateVehicle(VehicleHash.Voodoo, Game.Player.Character.Position);
+            string carModel = args[0].ToString();
+            if (Util.IsPossibleCar(carModel))
+            {
+                Vehicle car = await World.CreateVehicle(carModel, Game.Player.Character.Position);
+            }
+        }
+
+        private void TestSpawns()
+        {
+            TriggerServerEvent("OffDef:testSpawns", Game.Player.Name);
+        }
+
+        private void tpToMap()
+        {
+            Game.Player.Character.Position = new Vector3(806.858f, 1280.028f, 360.348f);
         }
 
         /* -------------------------------------------------------------------------- */
@@ -279,6 +296,23 @@ namespace OffenseDefense.Client
                 Debug.WriteLine("setting the new spawn");
                 offDefGame.SetSpawn(pos, heading, pos, heading);
             }
+        }
+
+        private async void SpawnCarAtLoc(string type, Vector3 pos, float heading)
+        {
+            VehicleHash carType;
+            if (type == "Runner")
+            {
+                carType = VehicleHash.Voodoo;
+            }
+            else
+            {
+                carType = VehicleHash.Insurgent2;
+            }
+
+            Debug.WriteLine("Car spawned!");
+            Vehicle car = await World.CreateVehicle(carType, pos, heading);
+            car.PlaceOnGround();
         }
 
         /* -------------------------------------------------------------------------- */

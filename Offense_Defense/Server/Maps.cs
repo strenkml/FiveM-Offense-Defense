@@ -5,8 +5,8 @@ namespace OffenseDefense.Server
     class Maps
     {
         private static Map map1 = new Map("Map 1",
-        new Shared.MapMarker(673.612f, 1370.508f, 326.657f, 59.840f),
-        new Shared.MapMarker(806.824f, 1280.178f, 360.346f, 261.717f),
+        new Shared.MapMarker(677.147f, 1356.288f, 327.936f, 57.944f),
+        new Shared.MapMarker(806.858f, 1280.028f, 360.348f, 270.380f),
         new List<Shared.MapMarker>() {
             new Shared.MapMarker(464.720f, 874.021f, 198.161f, 67.162f),
             new Shared.MapMarker(231.168f, 1376.892f, 239.621f, 23.198f),
