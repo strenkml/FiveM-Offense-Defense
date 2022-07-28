@@ -22,16 +22,16 @@ namespace OffenseDefense.Client
 
         int timeResetButtonPressed = 0;
         const int timeResetButtonPressedThreshold = 100;
+        bool recentReset = false;
 
         bool configMenuShown = false;
         bool isConfigLocked = true;
 
         List<Vector3> checkpoints = new List<Vector3>();
 
-        bool recentReset = false;
-        bool collision = true;
-        int timeSinceReset = 0;
-        const int resetNoCollisionTime = 100;
+        bool collision = false;
+        int noCollisionTime = -1;
+        const int noCollisionTimeThres = 100;
 
         /* -------------------------------------------------------------------------- */
         /*                                 Constructor                                */
@@ -40,7 +40,6 @@ namespace OffenseDefense.Client
         {
             Debug.WriteLine("Hi from OffenseDefense.Client!");
 
-            // TODO: Move to startGame function
             offDefGame = new OffDefGame();
 
             // Commands
@@ -50,6 +49,7 @@ namespace OffenseDefense.Client
             API.RegisterCommand("join", new Action<int, List<object>, string>(JoinTeam), false);
             API.RegisterCommand("leave", new Action<int, List<object>, string>(LeaveTeam), false);
             API.RegisterCommand("runner", new Action<int, List<object>, string>(JoinRunner), false);
+            API.RegisterCommand("modVersion", new Action<int, List<object>, string>(PrintVersion), false);
 
             // TODO: REMOVE ME
             API.RegisterCommand("delAll", new Action<int, List<object>, string>(RemoveAllCars), false);
@@ -158,6 +158,12 @@ namespace OffenseDefense.Client
             }
         }
 
+        private void PrintVersion(int source, List<object> args, string raw)
+        {
+            Util.SendChatMsg($"Mod Version: {Shared.Version.Major}.{Shared.Version.Minor}-{Shared.Version.FixVersion}", 255, 255, 0);
+        }
+
+        // TODO: Remove me
         private void RemoveAllCars(int source, List<object> args, string raw)
         {
             Vehicle[] cars = World.GetAllVehicles();
@@ -169,7 +175,7 @@ namespace OffenseDefense.Client
 
         private void RemoveMyCar(int source, List<object> args, string raw)
         {
-            offDefGame.DestroyCar();
+            Game.Player.Character.CurrentVehicle.Delete();
         }
 
         private async void Car(int source, List<object> args, string raw)
@@ -310,8 +316,8 @@ namespace OffenseDefense.Client
                 carType = VehicleHash.Insurgent2;
             }
 
-            Debug.WriteLine($"{type} Car spawned!");
             pos.Z += 5;
+            Util.RequestModel(carType.ToString());
             Vehicle car = await World.CreateVehicle(carType, pos, heading);
             car.PlaceOnGround();
         }
@@ -353,11 +359,12 @@ namespace OffenseDefense.Client
                     if (!recentReset)
                     {
                         recentReset = true;
-                        this.timeSinceReset = 0;
-                        this.collision = false;
-                        offDefGame.SetCarCollision(false);
 
                         offDefGame.RespawnPlayer();
+
+                        this.collision = false;
+                        this.noCollisionTime = 0;
+
                         Util.SendChatMsg("Respawned!");
                     }
                 }
@@ -385,14 +392,7 @@ namespace OffenseDefense.Client
 
             if (offDefGame.gameActive)
             {
-                offDefGame.DisableControls();
-
-                // Remove NPCs
-                API.SetPedDensityMultiplierThisFrame(0.0f);
-                API.SetScenarioPedDensityMultiplierThisFrame(0.0f, 0.0f);
-                API.SetVehicleDensityMultiplierThisFrame(0.0f);
-                API.SetRandomVehicleDensityMultiplierThisFrame(0.0f);
-                API.SetParkedVehicleDensityMultiplierThisFrame(0.0f);
+                offDefGame.DisableSettingsPerFrame();
 
                 if (!offDefGame.checkActive)
                 {
@@ -400,23 +400,38 @@ namespace OffenseDefense.Client
                 }
 
                 CheckRestartKeys();
+
+                Vehicle veh = Game.Player.Character.CurrentVehicle;
+                if (veh != null)
+                {
+                    List<Vehicle> allVeh = new List<Vehicle>(World.GetAllVehicles());
+
+                    foreach (Vehicle v in allVeh)
+                    {
+                        veh.SetNoCollision(v, this.collision);
+                    }
+                }
+
+                if (!this.collision && this.noCollisionTime != -1)
+                {
+                    if (this.noCollisionTime < noCollisionTimeThres)
+                    {
+                        this.noCollisionTime++;
+                    }
+                    else
+                    {
+                        this.noCollisionTime = 0;
+                        this.collision = true;
+
+                        Util.SendChatMsg("Collision Enabled!", 255, 255, 0);
+                    }
+                }
             }
 
-            if (this.collision == false)
+            if (offDefGame.gameStarted && this.noCollisionTime == -1)
             {
-                if (this.timeSinceReset < resetNoCollisionTime)
-                {
-                    this.timeSinceReset++;
-                }
-                else
-                {
-                    this.timeSinceReset = 0;
-                    collision = true;
-                    offDefGame.SetCarCollision(true);
-                }
-
+                this.noCollisionTime = 0;
             }
-
 
             return Task.FromResult(0);
         }
