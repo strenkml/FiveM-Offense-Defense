@@ -60,5 +60,25 @@ namespace OffenseDefense.Server
             }
             return true;
         }
+
+        public static void AssignTeamsStartingPosition(Dictionary<string, Team> teams, out Dictionary<string, int> teamsStartingPos) {
+            List<int> usedPositions = new List<int>();
+            Random rnd = new Random();
+            
+            foreach (KeyValuePair<string, Team> kp in teams) {
+                if kp.Value.GetPlayers().Count > 0 {
+                    teamsStartingPos.Add(new KeyValuePair<string, int>(kp.Key, 0));
+                }
+            }
+
+            foreach (KeyValuePair<string,int> kp in teamsStartingPos) {
+                int num = rnd.Next(8 - teamsStartingPos.Count, 8);
+                while (usedPosition.Includes(num)) {
+                    num = rnd.Next(8 - teamsStartingPos.Count, 8);
+                }
+                usedPositions.Add(num);
+                kp.Value = num;
+            }
+        }
     }
 }

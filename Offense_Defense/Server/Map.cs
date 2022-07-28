@@ -6,25 +6,30 @@ namespace OffenseDefense.Server
     class Map
     {
         private string name;
-        private Dictionary<string, Shared.MapMarker> runnerStarting;
-        private Dictionary<string, Shared.MapMarker> blockerStarting;
+        // The back most left starting spawn, the rest of the spawns will be calculated
+        private Shared.MapMarker initialRunnerStarting;
+        // The back most left starting spawn, the rest of the spawns will be calculated
+        private Shared.MapMarker initialBlockerStarting;
         private List<Shared.MapMarker> checkpoints;
 
         private int totalCheckpoints;
 
-        public Map(string name, Dictionary<string, Shared.MapMarker> runnerStarting, Dictionary<string, Shared.MapMarker> blockerStarting, List<Shared.MapMarker> checkpoints)
+        private List<Shared.MapMarker> runnerStarting;
+        private List<Shared.MapMarker> blockerStarting;
+
+        private const float DISTANCE_BETWEEN_CARS = 5f;
+
+        public Map(string name, Shared.MapMarker initialRunnerStarting, Shared.MapMarker initialBlockerStarting, List<Shared.MapMarker> checkpoints)
         {
             this.name = name;
-            this.runnerStarting = runnerStarting;
-            this.blockerStarting = blockerStarting;
+            this.initialRunnerStarting = initialRunnerStarting;
+            this.initialBlockerStarting = initialBlockerStarting;
             this.checkpoints = checkpoints;
 
             this.totalCheckpoints = checkpoints.Count;
-        }
 
-        public int GetTotalCheckpoints()
-        {
-            return this.totalCheckpoints;
+            this.runnerStarting = CreateStartingMarkers(this.initialRunnerStarting);
+            this.blockerStarting = CreateStartingMarkers(this.initialBlockerStarting);
         }
 
         public string GetName()
@@ -37,34 +42,58 @@ namespace OffenseDefense.Server
             return this.checkpoints;
         }
 
-        public Vector3 GetRunnerStartingSpawn(string team)
+        public int GetTotalCheckpoints()
         {
-            return this.runnerStarting[team].position;
+            return this.totalCheckpoints;
         }
 
-        public float GetRunnerStartingHeading(string team)
-        {
-            return this.runnerStarting[team].heading;
+        private List<Shared.MapMarker> CreateStartingMarkers(Shared.MapMarker startingMarker) {
+            List<Shared.MapMarker> list = new List<Shared.MapMarker>();
+
+            // Create the backrow of spawns
+            list.Add(startingMarker);
+            Shared.MapMarker startingPoint = startingMarker;
+            for (int i = 0; i < 3; i++) {
+                startingPoint = Shared.Coords.GetRight(startingPoint, 5);
+                list.Add(startingPoint);
+            }
+
+            // Create the front rightmost of spawns
+            startingPoint = Shared.Coords.GetFront(startingPoint, 5);
+            list.Add(startingPoint);
+
+            for (int i = 0; i < 3; i++) {
+                startingPoint = Shared.Coords.GetLeft(startingPoint, 5);
+                list.Add(startingPoint);
+            }
+
+            // Index 0 = Back left most
+            // Index 7 = Front left most
+            return list;
         }
 
-        public Vector3 GetBlockerStartingSpawn(string team)
-        {
-            return this.blockerStarting[team].position;
-        }
-
-        public float GetBlockerStartingHeading(string team)
-        {
-            return this.blockerStarting[team].heading;
-        }
-
-        public Dictionary<string, Shared.MapMarker> GetAllRunnerStarting()
-        {
+        public List<Shared.MapMarker> GetRunnerStartingMarkers() {
             return this.runnerStarting;
         }
 
-        public Dictionary<string, Shared.MapMarker> GetAllBlockerStarting()
-        {
+        public List<Shared.MapMarker> GetBlockerStartingMarkers() {
             return this.blockerStarting;
+        }
+
+        public Shared.MapMarker GetRunnerStartingPosition(int index) {
+            return this.runnerStarting[index].position;
+        }
+
+        public Shared.MapMarker GetRunnerStartingHeading(int index) {
+            return this.runnerStarting[index].heading;
+        }
+
+        public Shared.MapMarker GetBlockerStartingPosition(int index) {
+            return this.blockerStarting[index].position;
+        }
+
+        public Shared.MapMarker GetBlockerStartingHeading(int index) {
+            return this.blockerStarting[index].heading;
         }
     }
 }

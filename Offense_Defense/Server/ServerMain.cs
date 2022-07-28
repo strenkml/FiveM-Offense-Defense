@@ -12,6 +12,7 @@ namespace OffenseDefense.Server
         readonly string[] teamColors = { "blue", "red", "green", "orange", "yellow", "pink", "purple", "white" };
         Dictionary<string, Team> teams = new Dictionary<string, Team>();
         List<RankedScore> rankedTeams = new List<RankedScore>();
+        Dictionary<string, int> teamPositions = new Dictionary<string, int>();
 
         List<Player> players = new List<Player>();
 
@@ -173,6 +174,8 @@ namespace OffenseDefense.Server
             {
                 if (kp.Value.GetPlayers().Count > 0)
                 {
+                    Util.AssignTeamsStartingPosition(this.teams, out this.teamPositions);
+
                     Player runnerPlayer = this.players.Find(e => e.Name == kp.Value.runner);
 
                     this.rankedTeams = Util.UpdateTeamPositions(this.teams);
@@ -267,10 +270,10 @@ namespace OffenseDefense.Server
             TriggerClientEvent(player, "OffDef:StartGame", JsonConvert.SerializeObject(new
             {
                 checkpoints = currentMap.GetCheckpoints(),
-                runnerSpawn = currentMap.GetRunnerStartingSpawn(color),
-                runnerHeading = currentMap.GetRunnerStartingHeading(color),
-                blockerSpawn = currentMap.GetBlockerStartingSpawn(color),
-                blockerHeading = currentMap.GetBlockerStartingHeading(color),
+                runnerSpawn = currentMap.GetRunnerStartingPosition(this.teamPositions[color]),
+                runnerHeading = currentMap.GetRunnerStartingHeading(this.teamPositions[color]),
+                blockerSpawn = currentMap.GetBlockerStartingPosition(this.teamPositions[color]),
+                blockerHeading = currentMap.GetBlockerStartingHeading(this.teamPositions[color]),
                 color = color,
                 role = role,
                 runnerCar = runnerCar,

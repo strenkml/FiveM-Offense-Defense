@@ -5,26 +5,8 @@ namespace OffenseDefense.Server
     class Maps
     {
         private static Map map1 = new Map("Map 1",
-        new Dictionary<string, Shared.MapMarker>(){
-            {"blue", new Shared.MapMarker(673.612f, 1370.508f, 326.657f, 59.840f)},
-            {"red", new Shared.MapMarker(672.010f, 1367.657f, 326.685f, 55.887f)},
-            {"green", new Shared.MapMarker(671.131f, 1364.928f, 326.762f, 58.856f)},
-            {"orange", new Shared.MapMarker(667.790f, 1361.412f, 326.537f, 58.249f)},
-            {"yellow", new Shared.MapMarker(677.296f, 1355.273f, 328.010f, 59.653f)},
-            {"pink", new Shared.MapMarker(679.397f, 1359.809f, 328.061f, 62.597f)},
-            {"purple", new Shared.MapMarker(680.611f, 1362.989f, 328.015f, 61.628f)},
-            {"white", new Shared.MapMarker(685.165f, 1364.537f, 328.461f, 62.805f)},
-        },
-        new Dictionary<string, Shared.MapMarker>(){
-            {"blue", new Shared.MapMarker(806.824f, 1280.178f, 360.346f, 261.717f)},
-            {"red", new Shared.MapMarker(806.599f, 1276.452f, 360.363f, 263.713f)},
-            {"green", new Shared.MapMarker(806.271f, 1274.173f, 360.353f, 267.799f)},
-            {"orange", new Shared.MapMarker(806.549f, 1270.811f, 360.360f, 268.510f)},
-            {"yellow", new Shared.MapMarker(814.169f, 1270.618f, 360.410f, 268.529f)},
-            {"pink", new Shared.MapMarker(814.366f, 1274.085f, 360.431f, 271.962f)},
-            {"purple", new Shared.MapMarker(813.981f, 1276.925f, 360.426f, 269.585f)},
-            {"white", new Shared.MapMarker(816.302f, 1280.215f, 360.392f, 269.322f)},
-        },
+        new Shared.MapMarker(673.612f, 1370.508f, 326.657f, 59.840f),
+        new Shared.MapMarker(806.824f, 1280.178f, 360.346f, 261.717f),
         new List<Shared.MapMarker>() {
             new Shared.MapMarker(464.720f, 874.021f, 198.161f, 67.162f),
             new Shared.MapMarker(231.168f, 1376.892f, 239.621f, 23.198f),
