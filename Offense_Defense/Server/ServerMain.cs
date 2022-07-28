@@ -106,8 +106,10 @@ namespace OffenseDefense.Server
         }
 
         // TODO: Remove me
-        private void TestSpawns(string ps)
+        private async void TestSpawns(string ps)
         {
+            int numSpawns = 0;
+
             Player p = null;
             foreach (Player pl in Players)
             {
@@ -124,13 +126,29 @@ namespace OffenseDefense.Server
                 List<Shared.MapMarker> runners = map.GetRunnerStartingMarkers();
                 foreach (Shared.MapMarker m in runners)
                 {
+                    if (numSpawns >= 5)
+                    {
+                        numSpawns = 0;
+                        // await Delay(20000);
+                    }
+                    Debug.WriteLine($"Spawning runner at x: {m.position.X} y: {m.position.Y} z: {m.position.Z} head: {m.heading}");
                     TriggerClientEvent(p, "OffDef:SpawnCarAtLoc", "Runner", m.position, m.heading);
+                    numSpawns++;
+                    await Delay(1000);
                 }
 
                 List<Shared.MapMarker> blockers = map.GetBlockerStartingMarkers();
-                foreach (Shared.MapMarker m in runners)
+                foreach (Shared.MapMarker m in blockers)
                 {
+                    if (numSpawns >= 5)
+                    {
+                        numSpawns = 0;
+                        // await Delay(20000);
+                    }
+                    Debug.WriteLine($"Spawning blocker at x: {m.position.X} y: {m.position.Y} z: {m.position.Z} head: {m.heading}");
                     TriggerClientEvent(p, "OffDef:SpawnCarAtLoc", "Blocker", m.position, m.heading);
+                    numSpawns++;
+                    await Delay(1000);
                 }
             }
         }

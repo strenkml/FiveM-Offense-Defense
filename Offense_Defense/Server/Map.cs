@@ -17,10 +17,12 @@ namespace OffenseDefense.Server
         private List<Shared.MapMarker> runnerStarting;
         private List<Shared.MapMarker> blockerStarting;
 
-        private const float DISTANCE_BETWEEN_CARS = 5f;
+        private const float HOR_DISTANCE_BETWEEN_CARS = 3f;
+        private const float VERT_DISTANCE_BETWEEN_CARS = 7f;
 
         public Map(string name, Shared.MapMarker initialRunnerStarting, Shared.MapMarker initialBlockerStarting, List<Shared.MapMarker> checkpoints)
         {
+            Debug.WriteLine("Map Created!");
             this.name = name;
             this.initialRunnerStarting = initialRunnerStarting;
             this.initialBlockerStarting = initialBlockerStarting;
@@ -56,17 +58,17 @@ namespace OffenseDefense.Server
             Shared.MapMarker startingPoint = startingMarker;
             for (int i = 0; i < 3; i++)
             {
-                startingPoint = Shared.Coords.GetRight(startingPoint, 5);
+                startingPoint = Shared.Coords.GetRight(startingPoint, HOR_DISTANCE_BETWEEN_CARS);
                 list.Add(startingPoint);
             }
 
             // Create the front rightmost of spawns
-            startingPoint = Shared.Coords.GetFront(startingPoint, 5);
+            startingPoint = Shared.Coords.GetFront(startingPoint, VERT_DISTANCE_BETWEEN_CARS);
             list.Add(startingPoint);
 
             for (int i = 0; i < 3; i++)
             {
-                startingPoint = Shared.Coords.GetLeft(startingPoint, 5);
+                startingPoint = Shared.Coords.GetLeft(startingPoint, HOR_DISTANCE_BETWEEN_CARS);
                 list.Add(startingPoint);
             }
 

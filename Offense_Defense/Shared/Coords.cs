@@ -1,4 +1,5 @@
 using System;
+using CitizenFX.Core;
 
 namespace OffenseDefense.Shared
 {
@@ -59,8 +60,9 @@ namespace OffenseDefense.Shared
             float angle = HeadingToAngle(heading);
             float triangle = AngleToTriangle(angle);
 
-            a = (float)(distance * (Math.Sin(triangle)));
-            b = (float)Math.Sqrt((Math.Pow(distance, 2)) - (Math.Pow(a, 2)));
+            a = (float)(distance * Math.Sin(triangle * (Math.PI / 180)));
+            b = (float)Math.Sqrt(Math.Pow(distance, 2) - Math.Pow(a, 2));
+
         }
 
         public static MapMarker GetFront(MapMarker coord, float distance)
@@ -77,6 +79,8 @@ namespace OffenseDefense.Shared
             float newY = 0;
 
             float angle = HeadingToAngle(heading);
+
+            Debug.WriteLine($"GetFront(): Heading: {heading} Angle: {angle}");
             if (RequiresComplexComputations(heading))
             {
                 float a;
@@ -85,6 +89,7 @@ namespace OffenseDefense.Shared
                 FindOffsets(heading, distance, out a, out b);
 
                 int quadrant = GetQuadrant(angle);
+                Debug.WriteLine($"GetFront(): a: {a} b: {b} Quad: {quadrant}");
 
                 switch (quadrant)
                 {
@@ -94,7 +99,7 @@ namespace OffenseDefense.Shared
                         break;
                     case 2:
                         shiftX = -a;
-                        shiftY = -b;
+                        shiftY = b;
                         break;
                     case 3:
                         shiftX = -b;
@@ -127,6 +132,8 @@ namespace OffenseDefense.Shared
 
             newX = x + shiftX;
             newY = y + shiftY;
+
+            Debug.WriteLine($"GetFront(): Complex: {RequiresComplexComputations(heading)} shiftX: {shiftX} shiftY: {shiftY}");
 
             return new MapMarker(newX, newY, z, heading);
         }

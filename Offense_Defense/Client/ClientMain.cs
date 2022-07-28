@@ -310,7 +310,8 @@ namespace OffenseDefense.Client
                 carType = VehicleHash.Insurgent2;
             }
 
-            Debug.WriteLine("Car spawned!");
+            Debug.WriteLine($"{type} Car spawned!");
+            pos.Z += 5;
             Vehicle car = await World.CreateVehicle(carType, pos, heading);
             car.PlaceOnGround();
         }
