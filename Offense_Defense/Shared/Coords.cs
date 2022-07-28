@@ -80,7 +80,6 @@ namespace OffenseDefense.Shared
 
             float angle = HeadingToAngle(heading);
 
-            Debug.WriteLine($"GetFront(): Heading: {heading} Angle: {angle}");
             if (RequiresComplexComputations(heading))
             {
                 float a;
@@ -89,7 +88,6 @@ namespace OffenseDefense.Shared
                 FindOffsets(heading, distance, out a, out b);
 
                 int quadrant = GetQuadrant(angle);
-                Debug.WriteLine($"GetFront(): a: {a} b: {b} Quad: {quadrant}");
 
                 switch (quadrant)
                 {
@@ -132,8 +130,6 @@ namespace OffenseDefense.Shared
 
             newX = x + shiftX;
             newY = y + shiftY;
-
-            Debug.WriteLine($"GetFront(): Complex: {RequiresComplexComputations(heading)} shiftX: {shiftX} shiftY: {shiftY}");
 
             return new MapMarker(newX, newY, z, heading);
         }

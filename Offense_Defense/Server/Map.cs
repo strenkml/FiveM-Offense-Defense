@@ -22,7 +22,6 @@ namespace OffenseDefense.Server
 
         public Map(string name, Shared.MapMarker initialRunnerStarting, Shared.MapMarker initialBlockerStarting, List<Shared.MapMarker> checkpoints)
         {
-            Debug.WriteLine("Map Created!");
             this.name = name;
             this.initialRunnerStarting = initialRunnerStarting;
             this.initialBlockerStarting = initialBlockerStarting;
