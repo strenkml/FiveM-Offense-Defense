@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CitizenFX.Core;
-using CitizenFX.Core.UI;
 using CitizenFX.Core.Native;
 
 namespace OffenseDefense.Client
@@ -39,6 +38,8 @@ namespace OffenseDefense.Client
 
         public bool gameActive = false;
         private bool gameOver = false;
+        private bool gameStarted = false;
+
         private string winningTeam = "";
 
         public bool checkActive = false;
@@ -48,12 +49,19 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         public OffDefGame()
         {
-            // Events
-            EventHandlers.Add("OffDef:CountdownTimer", new Action<int>(SendCountdownTimer));
-            EventHandlers.Add("OffDef:EndGame", new Action<string>(EndGame));
-            EventHandlers.Add("OffDef:UpdateScoreboard", new Action<dynamic, int>(UpdateScoreboard));
-
             Game.Player.CanControlCharacter = true;
+        }
+
+        public bool GameStarted
+        {
+            get { return this.gameStarted; }
+            set { this.gameStarted = value; }
+        }
+
+        public bool GameActive
+        {
+            get { return this.gameActive; }
+            set { this.gameActive = value; }
         }
 
         /* -------------------------------------------------------------------------- */
@@ -64,6 +72,7 @@ namespace OffenseDefense.Client
             if (Util.IsPossibleCar(vehicle))
             {
                 Util.RequestModel(vehicle);
+                this.runnerSpawn.Z += 5;
                 Vehicle car = await World.CreateVehicle(vehicle, this.runnerSpawn, this.runnerHeading);
                 Util.SetCarLicensePlate(car, "RUNNER");
 
@@ -80,6 +89,7 @@ namespace OffenseDefense.Client
             if (Util.IsPossibleCar(vehicle))
             {
                 Util.RequestModel(vehicle);
+                this.runnerSpawn.Z += 5;
                 Vehicle car = await World.CreateVehicle(vehicle, this.blockerSpawn, this.blockerHeading);
                 Util.SetCarLicensePlate(car, "BLOCKER");
 
@@ -91,7 +101,7 @@ namespace OffenseDefense.Client
             }
         }
 
-        private async Task<Vehicle> SpawnCar()
+        private async Task<Vehicle> SpawnCar(bool respawn = false)
         {
             Vehicle car;
             if (this.role == "Runner")
@@ -108,10 +118,14 @@ namespace OffenseDefense.Client
 
             car.LockStatus = VehicleLockStatus.StickPlayerInside;
             car.IsExplosionProof = true;
+            car.IsFireProof = true;
             car.IsEngineRunning = true;
             car.RadioStation = RadioStation.RadioOff;
-            car.IsCollisionEnabled = true;
-            car.IsDriveable = false;
+
+            if (!respawn)
+            {
+                car.IsDriveable = false;
+            }
 
             car.PlaceOnGround();
 
@@ -145,11 +159,6 @@ namespace OffenseDefense.Client
             }
         }
 
-        public void SetCarCollision(bool isCollision)
-        {
-            this.myCar.IsCollisionEnabled = isCollision;
-        }
-
         /* -------------------------------------------------------------------------- */
         /*                                Spawn Control                               */
         /* -------------------------------------------------------------------------- */
@@ -164,21 +173,16 @@ namespace OffenseDefense.Client
         public async void RespawnPlayer()
         {
             DestroyCar();
-            await SpawnCar();
-            PreparePlayer(false);
+            await SpawnCar(true);
+            PreparePlayer();
         }
 
-        private void PreparePlayer(bool startingGame = true)
+        private void PreparePlayer()
         {
             Ped player = Game.Player.Character;
             player.SetIntoVehicle(this.myCar, VehicleSeat.Driver);
             player.IsCollisionEnabled = true;
             player.IsVisible = true;
-
-            // if (startingGame)
-            // {
-            //     Game.Player.CanControlCharacter = false;
-            // }
         }
 
         /* -------------------------------------------------------------------------- */
@@ -302,16 +306,27 @@ namespace OffenseDefense.Client
             TriggerServerEvent("OffDef:ClientReady", Game.Player.Name);
         }
 
-        public void DisableControls()
+        public void DisableSettingsPerFrame()
         {
             Game.DisableControlThisFrame(1, Control.VehicleExit);
             Game.DisableControlThisFrame(1, Control.VehicleAttack);
+
+            Game.Player.SetMayOnlyEnterThisVehicleThisFrame(this.myCar);
+
+            // Remove NPCs
+            API.SetPedDensityMultiplierThisFrame(0.0f);
+            API.SetScenarioPedDensityMultiplierThisFrame(0.0f, 0.0f);
+            API.SetVehicleDensityMultiplierThisFrame(0.0f);
+            API.SetRandomVehicleDensityMultiplierThisFrame(0.0f);
+            API.SetParkedVehicleDensityMultiplierThisFrame(0.0f);
         }
 
         private void PostCountdown()
         {
-            // Game.Player.CanControlCharacter = true;
-            this.myCar.IsDriveable = false;
+            Vehicle car = Game.Player.Character.CurrentVehicle;
+            car.IsDriveable = true;
+
+            this.gameStarted = true;
         }
 
         public void EndGame(string winningTeam)
@@ -335,7 +350,7 @@ namespace OffenseDefense.Client
             Game.Player.Character.Kill();
         }
 
-        private void UpdateScoreboard(dynamic ranks, int totalCheckpoints)
+        public void UpdateScoreboard(dynamic ranks, int totalCheckpoints)
         {
             Payload payload = new Payload();
             payload.scoreboardEnable = true;
@@ -379,7 +394,7 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         /*                               Event Handlers                               */
         /* -------------------------------------------------------------------------- */
-        private void SendCountdownTimer(int count)
+        public void SendCountdownTimer(int count)
         {
             this.currentCount = count;
             DrawCountdown();

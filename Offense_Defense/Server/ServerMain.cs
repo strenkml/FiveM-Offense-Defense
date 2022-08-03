@@ -12,6 +12,7 @@ namespace OffenseDefense.Server
         readonly string[] teamColors = { "blue", "red", "green", "orange", "yellow", "pink", "purple", "white" };
         Dictionary<string, Team> teams = new Dictionary<string, Team>();
         List<RankedScore> rankedTeams = new List<RankedScore>();
+        Dictionary<string, int> teamPositions = new Dictionary<string, int>();
 
         List<Player> players = new List<Player>();
 
@@ -20,7 +21,7 @@ namespace OffenseDefense.Server
 
         // Game Countdown
         const int countdownStart = 5;
-        const int timePerCountdown = 35;
+        const int timePerCountdown = 20;
         int currrentCountdownTime = 0;
         bool countdownActive = false;
         int countdownCount = countdownStart;
@@ -42,6 +43,7 @@ namespace OffenseDefense.Server
             API.RegisterCommand("startGame", new Action<int, List<object>, string>(ShowGameMenu), false);
             API.RegisterCommand("resetTeams", new Action<int, List<object>, string>(ResetTeams), false);
 
+
             // Event Handlers
             EventHandlers.Add("OffDef:AddPlayer", new Action<string, string>(AddPlayer));
             EventHandlers.Add("OffDef:RemovePlayer", new Action<string>(RemovePlayer));
@@ -49,6 +51,9 @@ namespace OffenseDefense.Server
             EventHandlers.Add("OffDef:ClientReady", new Action<string>(SetClientReady));
             EventHandlers.Add("OffDef:AddTeamPoint", new Action<string>(AddTeamPoint));
             EventHandlers.Add("OffDef:StartingGameFromNUI", new Action<string, string, string>(StartGame));
+
+            // TODO: Remove me
+            EventHandlers.Add("OffDef:testSpawns", new Action<string>(TestSpawns));
 
             // General Handlers
             EventHandlers.Add("playerJoining", new Action<string, string>(OnPlayerJoiningServer));
@@ -98,6 +103,44 @@ namespace OffenseDefense.Server
             CreateTeams();
             TriggerClientEvent("OffDef:UpdateTeams", this.teams);
 
+        }
+
+        // TODO: Remove me
+        private async void TestSpawns(string ps)
+        {
+            int numSpawns = 0;
+
+            Player p = null;
+            foreach (Player pl in Players)
+            {
+                if (pl.Name == ps)
+                {
+                    p = pl;
+                    break;
+                }
+            }
+
+            if (p != null)
+            {
+                Map map = Maps.GetMapFromName("Map 1");
+                List<Shared.MapMarker> runners = map.GetRunnerStartingMarkers();
+                foreach (Shared.MapMarker m in runners)
+                {
+                    Debug.WriteLine($"Spawning runner at x: {m.position.X} y: {m.position.Y} z: {m.position.Z} head: {m.heading}");
+                    TriggerClientEvent(p, "OffDef:SpawnCarAtLoc", "Runner", m.position, m.heading);
+                    numSpawns++;
+                    await Delay(100);
+                }
+
+                List<Shared.MapMarker> blockers = map.GetBlockerStartingMarkers();
+                foreach (Shared.MapMarker m in blockers)
+                {
+                    Debug.WriteLine($"Spawning blocker at x: {m.position.X} y: {m.position.Y} z: {m.position.Z} head: {m.heading}");
+                    TriggerClientEvent(p, "OffDef:SpawnCarAtLoc", "Blocker", m.position, m.heading);
+                    numSpawns++;
+                    await Delay(100);
+                }
+            }
         }
 
         /* -------------------------------------------------------------------------- */
@@ -173,6 +216,8 @@ namespace OffenseDefense.Server
             {
                 if (kp.Value.GetPlayers().Count > 0)
                 {
+                    Util.AssignTeamsStartingPosition(this.teams, out this.teamPositions);
+
                     Player runnerPlayer = this.players.Find(e => e.Name == kp.Value.runner);
 
                     this.rankedTeams = Util.UpdateTeamPositions(this.teams);
@@ -267,10 +312,10 @@ namespace OffenseDefense.Server
             TriggerClientEvent(player, "OffDef:StartGame", JsonConvert.SerializeObject(new
             {
                 checkpoints = currentMap.GetCheckpoints(),
-                runnerSpawn = currentMap.GetRunnerStartingSpawn(color),
-                runnerHeading = currentMap.GetRunnerStartingHeading(color),
-                blockerSpawn = currentMap.GetBlockerStartingSpawn(color),
-                blockerHeading = currentMap.GetBlockerStartingHeading(color),
+                runnerSpawn = currentMap.GetRunnerStartingPosition(this.teamPositions[color]),
+                runnerHeading = currentMap.GetRunnerStartingHeading(this.teamPositions[color]),
+                blockerSpawn = currentMap.GetBlockerStartingPosition(this.teamPositions[color]),
+                blockerHeading = currentMap.GetBlockerStartingHeading(this.teamPositions[color]),
                 color = color,
                 role = role,
                 runnerCar = runnerCar,
