@@ -38,7 +38,7 @@ namespace OffenseDefense.Client
 
         public bool gameActive = false;
         private bool gameOver = false;
-        public bool gameStarted = false;
+        private bool gameStarted = false;
 
         private string winningTeam = "";
 
@@ -49,12 +49,19 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         public OffDefGame()
         {
-            // Events
-            EventHandlers.Add("OffDef:CountdownTimer", new Action<int>(SendCountdownTimer));
-            EventHandlers.Add("OffDef:EndGame", new Action<string>(EndGame));
-            EventHandlers.Add("OffDef:UpdateScoreboard", new Action<dynamic, int>(UpdateScoreboard));
-
             Game.Player.CanControlCharacter = true;
+        }
+
+        public bool GameStarted
+        {
+            get { return this.gameStarted; }
+            set { this.gameStarted = value; }
+        }
+
+        public bool GameActive
+        {
+            get { return this.gameActive; }
+            set { this.gameActive = value; }
         }
 
         /* -------------------------------------------------------------------------- */
@@ -111,9 +118,9 @@ namespace OffenseDefense.Client
 
             car.LockStatus = VehicleLockStatus.StickPlayerInside;
             car.IsExplosionProof = true;
+            car.IsFireProof = true;
             car.IsEngineRunning = true;
             car.RadioStation = RadioStation.RadioOff;
-            car.IsCollisionEnabled = true;
 
             if (!respawn)
             {
@@ -166,11 +173,11 @@ namespace OffenseDefense.Client
         public async void RespawnPlayer()
         {
             DestroyCar();
-            await SpawnCar(false);
-            PreparePlayer(false);
+            await SpawnCar(true);
+            PreparePlayer();
         }
 
-        private void PreparePlayer(bool startingGame = true)
+        private void PreparePlayer()
         {
             Ped player = Game.Player.Character;
             player.SetIntoVehicle(this.myCar, VehicleSeat.Driver);
@@ -316,11 +323,10 @@ namespace OffenseDefense.Client
 
         private void PostCountdown()
         {
-            this.gameStarted = true;
-
             Vehicle car = Game.Player.Character.CurrentVehicle;
             car.IsDriveable = true;
 
+            this.gameStarted = true;
         }
 
         public void EndGame(string winningTeam)
@@ -344,7 +350,7 @@ namespace OffenseDefense.Client
             Game.Player.Character.Kill();
         }
 
-        private void UpdateScoreboard(dynamic ranks, int totalCheckpoints)
+        public void UpdateScoreboard(dynamic ranks, int totalCheckpoints)
         {
             Payload payload = new Payload();
             payload.scoreboardEnable = true;
@@ -388,7 +394,7 @@ namespace OffenseDefense.Client
         /* -------------------------------------------------------------------------- */
         /*                               Event Handlers                               */
         /* -------------------------------------------------------------------------- */
-        private void SendCountdownTimer(int count)
+        public void SendCountdownTimer(int count)
         {
             this.currentCount = count;
             DrawCountdown();

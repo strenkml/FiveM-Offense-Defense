@@ -124,4 +124,17 @@ $(function () {
       .then((resp) => console.log(resp));
     return;
   });
+
+  $("#close").click(function () {
+    fetch(`https://${GetParentResourceName()}/closePanel`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=UTF-8",
+      },
+      body: JSON.stringify({}),
+    })
+      .then((resp) => resp.json())
+      .then((resp) => console.log(resp));
+    return;
+  });
 });

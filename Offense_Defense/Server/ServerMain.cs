@@ -21,7 +21,7 @@ namespace OffenseDefense.Server
 
         // Game Countdown
         const int countdownStart = 5;
-        const int timePerCountdown = 35;
+        const int timePerCountdown = 20;
         int currrentCountdownTime = 0;
         bool countdownActive = false;
         int countdownCount = countdownStart;

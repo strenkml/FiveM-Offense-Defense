@@ -31,7 +31,13 @@ namespace OffenseDefense.Client
 
         bool collision = false;
         int noCollisionTime = -1;
-        const int noCollisionTimeThres = 100;
+        int noCollisionTimeThres = 400;
+
+        int noCollisionColorTime = 0;
+        const int noCollisionColorTimeThres = 10;
+        bool noCollisionColorReal = true;
+        TeamColor carColor;
+        TeamColor lightCarColor;
 
         /* -------------------------------------------------------------------------- */
         /*                                 Constructor                                */
@@ -69,6 +75,11 @@ namespace OffenseDefense.Client
             EventHandlers.Add("OffDef:SendError", new Action<string>(SendError));
             EventHandlers.Add("OffDef:SetTeamSpawn", new Action<string, Vector3, float>(SetTeamSpawn));
 
+            // Event Handlers for Game class
+            EventHandlers.Add("OffDef:CountdownTimer", new Action<int>(offDefGame.SendCountdownTimer));
+            EventHandlers.Add("OffDef:EndGame", new Action<string>(offDefGame.EndGame));
+            EventHandlers.Add("OffDef:UpdateScoreboard", new Action<dynamic, int>(offDefGame.UpdateScoreboard));
+
             // TODO: Remove me
             EventHandlers.Add("OffDef:SpawnCarAtLoc", new Action<string, Vector3, float>(SpawnCarAtLoc));
 
@@ -104,6 +115,12 @@ namespace OffenseDefense.Client
             EventHandlers["__cfx_nui:error"] += new Action<IDictionary<string, object>, CallbackDelegate>((data, cb) =>
             {
                 Util.SendChatMsg(data["error"].ToString(), 255, 0, 0);
+                API.SetNuiFocus(false, false);
+            });
+
+            API.RegisterNuiCallbackType("closePanel");
+            EventHandlers["__cfx_nui:closePanel"] += new Action<IDictionary<string, object>, CallbackDelegate>((data, cb) =>
+            {
                 API.SetNuiFocus(false, false);
             });
 
@@ -225,7 +242,16 @@ namespace OffenseDefense.Client
 
             Util.GetPlayerDetails(jsonDetails, out role, out color, out runnerSpawnLoc, out runnerSpawnHeading, out blockerSpawnLoc, out blockerSpawnHeading, out checkpointLocs, out runnerCar, out blockerCar);
 
-            this.collision = true;
+            this.collision = false;
+            this.noCollisionTime = -1;
+
+            RemoveAllCars(0, null, "");
+
+            this.carColor = TeamColors.GetTeamColorFromName(color);
+            this.lightCarColor = TeamColors.GetLightTeamColorFromName(color);
+
+            World.Weather = Weather.Clear;
+            World.CurrentDayTime = TimeSpan.FromHours(12);
 
             offDefGame.SetRole(role);
             offDefGame.SetTeamColor(color);
@@ -364,6 +390,7 @@ namespace OffenseDefense.Client
 
                         this.collision = false;
                         this.noCollisionTime = 0;
+                        this.noCollisionTimeThres = 300;
 
                         Util.SendChatMsg("Respawned!");
                     }
@@ -390,25 +417,30 @@ namespace OffenseDefense.Client
                 }
             }
 
-            if (offDefGame.gameActive)
+            // After Client is ready
+            if (offDefGame.GameActive)
             {
                 offDefGame.DisableSettingsPerFrame();
 
-                if (!offDefGame.checkActive)
-                {
-                    offDefGame.CheckCheckpoints();
-                }
-
-                CheckRestartKeys();
-
-                Vehicle veh = Game.Player.Character.CurrentVehicle;
+                Vehicle veh = Game.Player.Character.LastVehicle;
                 if (veh != null)
                 {
                     List<Vehicle> allVeh = new List<Vehicle>(World.GetAllVehicles());
 
-                    foreach (Vehicle v in allVeh)
+                    for (int i = 0; i < allVeh.Count; i++)
                     {
-                        veh.SetNoCollision(v, this.collision);
+                        if (veh != allVeh[i])
+                        {
+                            if (this.collision)
+                            {
+                                allVeh[i].IsCollisionEnabled = true;
+                                veh.IsCollisionEnabled = true;
+                            }
+                            else
+                            {
+                                allVeh[i].SetNoCollision(veh, true);
+                            }
+                        }
                     }
                 }
 
@@ -428,9 +460,51 @@ namespace OffenseDefense.Client
                 }
             }
 
-            if (offDefGame.gameStarted && this.noCollisionTime == -1)
+            // Post countdown
+            if (offDefGame.GameStarted)
             {
-                this.noCollisionTime = 0;
+                if (this.noCollisionTime == -1)
+                {
+                    this.noCollisionTime = 0;
+                    this.collision = false;
+                }
+
+                if (!offDefGame.checkActive)
+                {
+                    offDefGame.CheckCheckpoints();
+                }
+
+                CheckRestartKeys();
+
+                if (!collision)
+                {
+                    if (noCollisionColorTime < noCollisionColorTimeThres)
+                    {
+                        noCollisionColorTime++;
+                    }
+                    else
+                    {
+                        noCollisionColorTime = 0;
+
+                        if (noCollisionColorReal)
+                        {
+                            Util.SetCarColor(Game.Player.Character.CurrentVehicle, lightCarColor.r, lightCarColor.g, lightCarColor.b);
+                        }
+                        else
+                        {
+                            Util.SetCarColor(Game.Player.Character.CurrentVehicle, carColor.r, carColor.g, carColor.b);
+                        }
+                        noCollisionColorReal = !noCollisionColorReal;
+                    }
+                }
+                else
+                {
+                    if (!noCollisionColorReal)
+                    {
+                        Util.SetCarColor(Game.Player.Character.CurrentVehicle, carColor.r, carColor.g, carColor.b);
+                    }
+                }
+
             }
 
             return Task.FromResult(0);
