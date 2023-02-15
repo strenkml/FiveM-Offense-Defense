@@ -342,7 +342,7 @@ namespace OffenseDefense.Client
                 carType = VehicleHash.Insurgent2;
             }
 
-            pos.Z += 5;
+            pos.Z += 15;
             Util.RequestModel(carType.ToString());
             Vehicle car = await World.CreateVehicle(carType, pos, heading);
             car.PlaceOnGround();
