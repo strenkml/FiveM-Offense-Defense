@@ -25,6 +25,7 @@ namespace OffenseDefense.Server
             this.name = name;
             this.initialRunnerStarting = initialRunnerStarting;
             this.initialBlockerStarting = initialBlockerStarting;
+
             this.checkpoints = checkpoints;
 
             this.totalCheckpoints = checkpoints.Count;
