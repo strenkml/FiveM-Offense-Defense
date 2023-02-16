@@ -72,7 +72,7 @@ namespace OffenseDefense.Client
             if (Util.IsPossibleCar(vehicle))
             {
                 Util.RequestModel(vehicle);
-                this.runnerSpawn.Z += 15;
+                // this.runnerSpawn.Z += 15;
                 Vehicle car = await World.CreateVehicle(vehicle, this.runnerSpawn, this.runnerHeading);
                 Util.SetCarLicensePlate(car, "RUNNER");
 
@@ -89,7 +89,7 @@ namespace OffenseDefense.Client
             if (Util.IsPossibleCar(vehicle))
             {
                 Util.RequestModel(vehicle);
-                this.blockerSpawn.Z += 15;
+                // this.blockerSpawn.Z += 15;
                 Vehicle car = await World.CreateVehicle(vehicle, this.blockerSpawn, this.blockerHeading);
                 Util.SetCarLicensePlate(car, "BLOCKER");
 
